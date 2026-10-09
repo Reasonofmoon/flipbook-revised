@@ -111,7 +111,7 @@ docker compose down -v           # stop AND delete all flipbooks and the databas
 
 Data lives in two named volumes: `flipbook-data` (uploaded files and page images) and `mongo-data` (the database).
 
-> **Note:** The startup log masks a configured API key (e.g. `3734…0dea`). Only an auto-generated key is printed in full, so set `FLIPBOOK_API_KEY` to keep it out of logs.
+> **Note:** The startup log masks a configured API key (e.g. `a1b2…c3d4`). Only an auto-generated key is printed in full, so set `FLIPBOOK_API_KEY` to keep it out of logs.
 
 ## Quick Start (without Docker)
 
