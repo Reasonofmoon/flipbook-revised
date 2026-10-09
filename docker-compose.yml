@@ -1,0 +1,38 @@
+# Local development stack: flipbook app + MongoDB.
+# Secrets come from .env (copy .env.example and fill in).
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      mongo:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      FLIPBOOK_PORT: "8080"
+      FLIPBOOK_BASE_URL: ${FLIPBOOK_BASE_URL:-http://localhost:8080}
+      FLIPBOOK_DATA_DIR: /data
+      FLIPBOOK_MONGO_URI: mongodb://mongo:27017
+      FLIPBOOK_MONGO_DB: flipbook
+      FLIPBOOK_API_KEY: ${FLIPBOOK_API_KEY:?set FLIPBOOK_API_KEY in .env}
+      FLIPBOOK_SESSION_SECRET: ${FLIPBOOK_SESSION_SECRET:?set FLIPBOOK_SESSION_SECRET in .env}
+      # Not read by the app; used only to pipe into `./flipbook set-password`
+      FLIPBOOK_ADMIN_PASSWORD: ${FLIPBOOK_ADMIN_PASSWORD:-}
+    volumes:
+      - flipbook-data:/data
+
+volumes:
+  mongo-data:
+  flipbook-data:
