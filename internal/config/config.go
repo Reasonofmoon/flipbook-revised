@@ -3,6 +3,9 @@ package config
 import (
 	"crypto/rand"
 	"encoding/hex"
+	"errors"
+	"fmt"
+	"io/fs"
 	"log"
 	"os"
 	"path/filepath"
@@ -128,27 +131,67 @@ func Load() *Config {
 
 const apiKeyFileName = "api_key"
 
-// loadOrCreateAPIKey returns the key stored at path, creating it (mode 0600)
-// with a random value if it does not exist. On a write failure it still
-// returns a usable in-memory key along with the error.
-func loadOrCreateAPIKey(path string) (string, error) {
-	if data, err := os.ReadFile(path); err == nil {
-		if key := strings.TrimSpace(string(data)); key != "" {
-			return key, nil
-		}
-	}
+// minAPIKeyLen is the shortest stored key accepted (32 hex chars = 128 bits).
+const minAPIKeyLen = 32
 
+// loadOrCreateAPIKey returns the key stored at path, creating it (mode 0600)
+// with a random value if it does not exist. A stored key that is too short or
+// not hex is replaced. The path must be a regular file: a symlink or other
+// file type is refused rather than followed. On any failure it still returns
+// a usable in-memory key along with the error.
+func loadOrCreateAPIKey(path string) (string, error) {
 	b := make([]byte, 32)
 	rand.Read(b)
-	key := hex.EncodeToString(b)
+	fresh := hex.EncodeToString(b)
+
+	info, err := os.Lstat(path)
+	switch {
+	case err == nil && !info.Mode().IsRegular():
+		return fresh, fmt.Errorf("%s is not a regular file; refusing to use it", path)
+	case err == nil:
+		data, err := os.ReadFile(path)
+		if err != nil {
+			return fresh, err
+		}
+		if key := strings.TrimSpace(string(data)); isValidAPIKey(key) {
+			// Tighten permissions on a key file created with a looser mode.
+			if info.Mode().Perm()&0o077 != 0 {
+				if err := os.Chmod(path, 0o600); err != nil {
+					return key, err
+				}
+			}
+			return key, nil
+		}
+		// Weak or malformed key: discard it and write a fresh one below.
+		if err := os.Remove(path); err != nil {
+			return fresh, err
+		}
+	case !errors.Is(err, fs.ErrNotExist):
+		return fresh, err
+	}
 
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
-		return key, err
+		return fresh, err
 	}
-	if err := os.WriteFile(path, []byte(key+"\n"), 0o600); err != nil {
-		return key, err
+	// O_EXCL fails if anything (including a symlink planted after the check)
+	// already exists at path, so the key is never written through a link.
+	f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600)
+	if err != nil {
+		return fresh, err
 	}
-	return key, nil
+	if _, err := f.WriteString(fresh + "\n"); err != nil {
+		f.Close()
+		return fresh, err
+	}
+	return fresh, f.Close()
+}
+
+func isValidAPIKey(key string) bool {
+	if len(key) < minAPIKeyLen {
+		return false
+	}
+	_, err := hex.DecodeString(key)
+	return err == nil
 }
 
 func findLibreOffice() string {
