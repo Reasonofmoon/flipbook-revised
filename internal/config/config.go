@@ -3,8 +3,11 @@ package config
 import (
 	"crypto/rand"
 	"encoding/hex"
+	"log"
 	"os"
+	"path/filepath"
 	"strconv"
+	"strings"
 
 	"gopkg.in/yaml.v3"
 )
@@ -22,8 +25,9 @@ type Config struct {
 	SessionSecret  string `yaml:"session_secret"`
 	APIKey         string `yaml:"api_key"`
 
-	// APIKeyGenerated is true when no key was configured and one was generated at startup.
-	APIKeyGenerated bool `yaml:"-"`
+	// APIKeyFile is the file holding the API key when none was configured
+	// (empty if the key came from config/env, or could not be persisted).
+	APIKeyFile string `yaml:"-"`
 }
 
 func Load() *Config {
@@ -106,15 +110,45 @@ func Load() *Config {
 		cfg.SessionSecret = hex.EncodeToString(b)
 	}
 
-	// Generate a random API key if not set
+	// No configured API key: reuse the persisted one, or generate and persist it.
+	// The server and the `mcp` subprocess both call Load, so a shared file keeps
+	// them on the same key, and the key survives restarts without being logged.
 	if cfg.APIKey == "" {
-		b := make([]byte, 32)
-		rand.Read(b)
-		cfg.APIKey = hex.EncodeToString(b)
-		cfg.APIKeyGenerated = true
+		cfg.APIKeyFile = filepath.Join(cfg.DataDir, apiKeyFileName)
+		key, err := loadOrCreateAPIKey(cfg.APIKeyFile)
+		if err != nil {
+			log.Printf("WARNING: could not persist API key to %s: %v", cfg.APIKeyFile, err)
+			cfg.APIKeyFile = ""
+		}
+		cfg.APIKey = key
 	}
 
 	return cfg
+}
+
+const apiKeyFileName = "api_key"
+
+// loadOrCreateAPIKey returns the key stored at path, creating it (mode 0600)
+// with a random value if it does not exist. On a write failure it still
+// returns a usable in-memory key along with the error.
+func loadOrCreateAPIKey(path string) (string, error) {
+	if data, err := os.ReadFile(path); err == nil {
+		if key := strings.TrimSpace(string(data)); key != "" {
+			return key, nil
+		}
+	}
+
+	b := make([]byte, 32)
+	rand.Read(b)
+	key := hex.EncodeToString(b)
+
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		return key, err
+	}
+	if err := os.WriteFile(path, []byte(key+"\n"), 0o600); err != nil {
+		return key, err
+	}
+	return key, nil
 }
 
 func findLibreOffice() string {
