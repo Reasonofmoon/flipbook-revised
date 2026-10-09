@@ -51,7 +51,69 @@ brew install --cask libreoffice
 sudo apt install poppler-utils libreoffice-impress
 ```
 
-## Quick Start
+## Quick Start with Docker
+
+The easiest way to run Flipbook, especially on Windows. Docker Compose starts the app together with a local MongoDB, and the image already contains LibreOffice, Poppler, and CJK fonts (Korean, Japanese, and Chinese slides render correctly). You only need [Docker Desktop](https://www.docker.com/products/docker-desktop/).
+
+**1. Clone and create `.env`**
+
+```bash
+git clone https://github.com/Reasonofmoon/flipbook-revised.git
+cd flipbook-revised
+cp .env.example .env
+```
+
+**2. Fill in `.env`**
+
+| Variable | Description |
+|----------|-------------|
+| `FLIPBOOK_BASE_URL` | Public URL (`http://localhost:8080` for local use) |
+| `FLIPBOOK_API_KEY` | Bearer token for the API and MCP. Required |
+| `FLIPBOOK_SESSION_SECRET` | Session signing key. Required |
+| `FLIPBOOK_ADMIN_PASSWORD` | Admin login password, 8+ characters, no spaces |
+
+Generate random values for the key and secret:
+
+```bash
+openssl rand -hex 32
+```
+
+On Windows PowerShell without OpenSSL:
+
+```powershell
+[Convert]::ToHexString([Security.Cryptography.RandomNumberGenerator]::GetBytes(32)).ToLower()
+```
+
+Use fixed values here. If they are left to auto-generate, they change on every restart and log out admins and break MCP clients.
+
+**3. Build and start**
+
+```bash
+docker compose up -d --build
+```
+
+**4. Set the admin password** (reads `FLIPBOOK_ADMIN_PASSWORD` from `.env`)
+
+```bash
+docker compose exec -T app sh -c 'echo "$FLIPBOOK_ADMIN_PASSWORD" | ./flipbook set-password'
+```
+
+**5. Open** [http://localhost:8080/admin](http://localhost:8080/admin) and log in.
+
+**Day-to-day commands**
+
+```bash
+docker compose logs -f app       # follow server logs
+docker compose down              # stop (data is kept)
+docker compose up -d --build     # rebuild after pulling changes
+docker compose down -v           # stop AND delete all flipbooks and the database
+```
+
+Data lives in two named volumes: `flipbook-data` (uploaded files and page images) and `mongo-data` (the database).
+
+> **Note:** The server prints the API key in its startup log, so treat `docker compose logs` output as sensitive.
+
+## Quick Start (without Docker)
 
 ```bash
 # Clone the repo
@@ -212,6 +274,9 @@ flipbook/
 │   ├── templates/                   # Go HTML templates
 │   └── static/                      # CSS, JS, vendored libraries
 ├── config.example.yaml              # Example configuration
+├── Dockerfile                       # App image (LibreOffice, Poppler, CJK fonts)
+├── docker-compose.yml               # App + local MongoDB stack
+├── .env.example                     # Environment variables for Docker Compose
 └── data/                            # Runtime data (gitignored)
 ```
 
