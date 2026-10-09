@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -56,8 +57,8 @@ func (h *APIHandler) ListFlipbooks(w http.ResponseWriter, r *http.Request) {
 			Slug:      fb.Slug,
 			Status:    fb.Status,
 			PageCount: fb.PageCount,
-			ViewerURL: h.baseURL + "/v/" + fb.Slug,
-			EmbedURL:  h.baseURL + "/embed/" + fb.Slug,
+			ViewerURL: h.baseURL + "/v/" + url.PathEscape(fb.Slug),
+			EmbedURL:  h.baseURL + "/embed/" + url.PathEscape(fb.Slug),
 			CreatedAt: fb.CreatedAt.Format("2006-01-02T15:04:05Z"),
 		})
 	}
@@ -86,8 +87,8 @@ func (h *APIHandler) GetFlipbook(w http.ResponseWriter, r *http.Request) {
 		"page_count": fb.PageCount,
 		"width":      fb.PageWidth,
 		"height":     fb.PageHeight,
-		"viewer_url": h.baseURL + "/v/" + fb.Slug,
-		"embed_url":  h.baseURL + "/embed/" + fb.Slug,
+		"viewer_url": h.baseURL + "/v/" + url.PathEscape(fb.Slug),
+		"embed_url":  h.baseURL + "/embed/" + url.PathEscape(fb.Slug),
 		"embed_code": embedCode(h.baseURL, fb.Slug),
 		"pages":      pages,
 		"error":      fb.ErrorMessage,

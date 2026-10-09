@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/go-chi/chi/v5"
@@ -67,7 +68,7 @@ func (h *ViewerHandler) View(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Canonical URL and OG image
-	canonicalURL := h.baseURL + "/v/" + fb.Slug
+	canonicalURL := h.baseURL + "/v/" + url.PathEscape(fb.Slug)
 	var ogImage string
 	if fb.PageCount > 0 {
 		ogImage = h.baseURL + h.storage.PageImageURL(fb.ID, pageFmt, 1)

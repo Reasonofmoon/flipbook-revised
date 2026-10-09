@@ -7,6 +7,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -19,6 +20,7 @@ import (
 	"github.com/jonradoff/flipbook/internal/models"
 	"github.com/jonradoff/flipbook/internal/storage"
 	"github.com/jonradoff/flipbook/internal/worker"
+	"golang.org/x/text/unicode/norm"
 )
 
 type AdminHandler struct {
@@ -195,7 +197,7 @@ func (h *AdminHandler) Settings(w http.ResponseWriter, r *http.Request) {
 }
 
 func embedCode(baseURL, slug string) string {
-	return `<iframe src="` + baseURL + `/embed/` + slug + `" width="800" height="600" frameborder="0" allowfullscreen style="border:none;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.1);"></iframe>`
+	return `<iframe src="` + baseURL + `/embed/` + url.PathEscape(slug) + `" width="800" height="600" frameborder="0" allowfullscreen style="border:none;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.1);"></iframe>`
 }
 
 // Google Slides URL pattern: extract presentation ID
@@ -294,18 +296,28 @@ func (h *AdminHandler) ImportURL(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/admin/flipbooks/"+id, http.StatusSeeOther)
 }
 
-var nonAlphanumeric = regexp.MustCompile(`[^a-z0-9]+`)
+// nonSlugChars matches runs of anything that is not a letter or digit in any
+// script, so Korean (and other non-Latin) titles keep their text in the slug.
+var nonSlugChars = regexp.MustCompile(`[^\p{L}\p{N}]+`)
+
+// maxSlugRunes caps slug length; each Hangul syllable is 9 chars once
+// percent-encoded in a URL.
+const maxSlugRunes = 60
 
 func slugify(s string) string {
-	s = strings.ToLower(s)
+	// NFC so decomposed Hangul (e.g. macOS filenames) matches typed text.
+	s = norm.NFC.String(strings.ToLower(s))
 	s = strings.Map(func(r rune) rune {
 		if unicode.IsLetter(r) || unicode.IsDigit(r) || r == '-' || r == ' ' {
 			return r
 		}
 		return -1
 	}, s)
-	s = nonAlphanumeric.ReplaceAllString(s, "-")
+	s = nonSlugChars.ReplaceAllString(s, "-")
 	s = strings.Trim(s, "-")
+	if r := []rune(s); len(r) > maxSlugRunes {
+		s = strings.TrimRight(string(r[:maxSlugRunes]), "-")
+	}
 	if s == "" {
 		s = "flipbook"
 	}
