@@ -21,6 +21,9 @@ type Config struct {
 	ThumbnailDPI   int    `yaml:"thumbnail_dpi"`
 	SessionSecret  string `yaml:"session_secret"`
 	APIKey         string `yaml:"api_key"`
+
+	// APIKeyGenerated is true when no key was configured and one was generated at startup.
+	APIKeyGenerated bool `yaml:"-"`
 }
 
 func Load() *Config {
@@ -108,6 +111,7 @@ func Load() *Config {
 		b := make([]byte, 32)
 		rand.Read(b)
 		cfg.APIKey = hex.EncodeToString(b)
+		cfg.APIKeyGenerated = true
 	}
 
 	return cfg

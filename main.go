@@ -324,7 +324,12 @@ func runServer() {
 
 	log.Printf("Flipbook server starting on :%s", cfg.Port)
 	log.Printf("Admin UI:  %s/admin", cfg.BaseURL)
-	log.Printf("API key:   %s", cfg.APIKey)
+	if cfg.APIKeyGenerated {
+		// The log is the only way to learn a generated key, so print it in full once.
+		log.Printf("API key:   %s (auto-generated; set FLIPBOOK_API_KEY to keep it stable)", cfg.APIKey)
+	} else {
+		log.Printf("API key:   %s", maskSecret(cfg.APIKey))
+	}
 	log.Printf("LibreOffice: %s", cfg.LibreOfficeBin)
 
 	// Graceful shutdown
@@ -400,4 +405,13 @@ func parseTemplates() *template.Template {
 
 	tmpl := template.Must(template.New("").Funcs(funcMap).ParseFiles(files...))
 	return tmpl
+}
+
+// maskSecret keeps only the first and last 4 characters so a key can be
+// recognized in logs without being usable.
+func maskSecret(s string) string {
+	if len(s) <= 8 {
+		return "****"
+	}
+	return s[:4] + "…" + s[len(s)-4:]
 }
