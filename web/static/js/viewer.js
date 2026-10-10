@@ -488,8 +488,19 @@ document.addEventListener('DOMContentLoaded', function() {
         updateSearchStatus();
     }
 
+    // Normalize text for matching: NFC, lowercase, and drop all whitespace.
+    // pdftotext often splits Korean text ("2장:" becomes "2 장 :"), so a
+    // whitespace-insensitive match is what users expect.
+    function normalizeForSearch(s) {
+        s = s || '';
+        if (s.normalize) s = s.normalize('NFC');
+        return s.toLowerCase().replace(/\s+/g, '');
+    }
+
+    var normalizedPageTexts = null; // built lazily on first search
+
     function onSearchInput() {
-        var query = document.getElementById('search-input').value.trim().toLowerCase();
+        var query = normalizeForSearch(document.getElementById('search-input').value);
         searchMatches = [];
         searchMatchIndex = -1;
 
@@ -498,9 +509,13 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
+        if (!normalizedPageTexts) {
+            normalizedPageTexts = data.pageTexts.map(normalizeForSearch);
+        }
+
         // Find all pages containing the query (one match per page)
-        for (var i = 0; i < data.pageTexts.length; i++) {
-            if (data.pageTexts[i].toLowerCase().indexOf(query) !== -1) {
+        for (var i = 0; i < normalizedPageTexts.length; i++) {
+            if (normalizedPageTexts[i].indexOf(query) !== -1) {
                 searchMatches.push(i);
             }
         }
