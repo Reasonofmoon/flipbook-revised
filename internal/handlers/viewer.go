@@ -34,6 +34,9 @@ func (h *ViewerHandler) View(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Title-only guess until page text is available (refined below when ready)
+	lang := detectLang(fb.Title, nil)
+
 	switch fb.Status {
 	case models.StatusReady:
 		// continue below
@@ -41,7 +44,8 @@ func (h *ViewerHandler) View(w http.ResponseWriter, r *http.Request) {
 		h.tmpl.ExecuteTemplate(w, "viewer_wait", map[string]interface{}{
 			"Flipbook": fb,
 			"BaseURL":  h.baseURL,
-			"Lang":     detectLang(fb.Title, nil),
+			"Lang":     lang,
+			"T":        uiFor(lang),
 		})
 		return
 	default:
@@ -62,6 +66,7 @@ func (h *ViewerHandler) View(w http.ResponseWriter, r *http.Request) {
 	// Load extracted text for search and SEO (nil if unavailable)
 	pageTexts := h.storage.LoadPageTexts(fb.ID)
 	pageTextsJSON, _ := json.Marshal(pageTexts)
+	lang = detectLang(fb.Title, pageTexts)
 
 	// Build SEO description from first few pages of text
 	metaDesc := fb.Description
@@ -87,7 +92,8 @@ func (h *ViewerHandler) View(w http.ResponseWriter, r *http.Request) {
 		"OGImage":       ogImage,
 		"MetaDesc":      metaDesc,
 		"EmbedCode":     embedCode(h.baseURL, fb.Slug),
-		"Lang":          detectLang(fb.Title, pageTexts),
+		"Lang":          lang,
+		"T":             uiFor(lang),
 	})
 }
 

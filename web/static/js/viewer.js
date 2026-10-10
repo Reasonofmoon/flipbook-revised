@@ -2,6 +2,14 @@ document.addEventListener('DOMContentLoaded', function() {
     var data = window.FLIPBOOK_DATA;
     if (!data || !data.pages || data.pages.length === 0) return;
 
+    // UI text injected by the server for the page language; English fallback
+    var i18n = data.i18n || {};
+    var T = {
+        copied: i18n.copied || 'Copied!',
+        noResults: i18n.noResults || 'No results',
+        page: i18n.page || 'Page'
+    };
+
     var wrapper = document.getElementById('flipbook-container');
     var navNext = document.getElementById('nav-next');
 
@@ -374,7 +382,7 @@ document.addEventListener('DOMContentLoaded', function() {
             var btn = el.parentElement.querySelector('button');
             if (btn) {
                 var orig = btn.textContent;
-                btn.textContent = 'Copied!';
+                btn.textContent = T.copied;
                 setTimeout(function() { btn.textContent = orig; }, 1500);
             }
         }
@@ -561,7 +569,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (nextBtn) nextBtn.disabled = false;
         } else {
             var query = document.getElementById('search-input');
-            statusEl.textContent = (query && query.value.trim().length > 0) ? 'No results' : '';
+            statusEl.textContent = (query && query.value.trim().length > 0) ? T.noResults : '';
             if (prevBtn) prevBtn.disabled = true;
             if (nextBtn) nextBtn.disabled = true;
         }
@@ -582,7 +590,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 var img = document.createElement('img');
                 img.className = 'grid-page-img';
                 img.src = thumbSrc[pageIndex];
-                img.alt = 'Page ' + (pageIndex + 1);
+                img.alt = T.page + ' ' + (pageIndex + 1);
                 img.loading = 'lazy';
 
                 var label = document.createElement('div');

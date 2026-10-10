@@ -33,6 +33,9 @@ func (h *EmbedHandler) Embed(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("X-Frame-Options", "ALLOWALL")
 	w.Header().Set("Content-Security-Policy", "frame-ancestors *")
 
+	// Title-only guess until page text is available (refined below when ready)
+	lang := detectLang(fb.Title, nil)
+
 	switch fb.Status {
 	case models.StatusReady:
 		// continue below
@@ -40,7 +43,8 @@ func (h *EmbedHandler) Embed(w http.ResponseWriter, r *http.Request) {
 		h.tmpl.ExecuteTemplate(w, "viewer_wait", map[string]interface{}{
 			"Flipbook": fb,
 			"BaseURL":  h.baseURL,
-			"Lang":     detectLang(fb.Title, nil),
+			"Lang":     lang,
+			"T":        uiFor(lang),
 		})
 		return
 	default:
@@ -60,6 +64,7 @@ func (h *EmbedHandler) Embed(w http.ResponseWriter, r *http.Request) {
 
 	pageTexts := h.storage.LoadPageTexts(fb.ID)
 	pageTextsJSON, _ := json.Marshal(pageTexts)
+	lang = detectLang(fb.Title, pageTexts)
 
 	h.tmpl.ExecuteTemplate(w, "embed", map[string]interface{}{
 		"Flipbook":      fb,
@@ -68,6 +73,7 @@ func (h *EmbedHandler) Embed(w http.ResponseWriter, r *http.Request) {
 		"PageTexts":     pageTexts,
 		"PageTextsJSON": template.JS(pageTextsJSON),
 		"BaseURL":       h.baseURL,
-		"Lang":          detectLang(fb.Title, pageTexts),
+		"Lang":          lang,
+		"T":             uiFor(lang),
 	})
 }

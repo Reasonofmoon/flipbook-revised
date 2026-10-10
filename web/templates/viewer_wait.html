@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{.Flipbook.Title}} - Loading...</title>
+    <title>{{.Flipbook.Title}} - {{.T.loading}}</title>
     <link rel="icon" type="image/svg+xml" href="/static/img/favicon.svg">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -38,7 +38,7 @@
         <div class="wait-spinner"></div>
         <div class="wait-title">{{.Flipbook.Title}}</div>
         <div class="wait-msg">
-            This flipbook is being prepared. The page will refresh automatically.
+            {{.T.preparing}}
         </div>
     </div>
 </body>
