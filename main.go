@@ -306,6 +306,12 @@ func runServer() {
 	r.Get("/v/{slug}", viewerH.View)
 	r.Get("/embed/{slug}", embedH.Embed)
 
+	// Liveness check for the platform (Fly.io http_service.checks)
+	r.Get("/healthz", func(rw http.ResponseWriter, req *http.Request) {
+		rw.Header().Set("Content-Type", "text/plain; charset=utf-8")
+		rw.Write([]byte("ok"))
+	})
+
 	// Root redirect
 	r.Get("/", func(rw http.ResponseWriter, req *http.Request) {
 		http.Redirect(rw, req, "/admin", http.StatusFound)
