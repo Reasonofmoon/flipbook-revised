@@ -78,10 +78,12 @@ Fly가 `Dockerfile`로 이미지를 빌드합니다(한글 폰트 포함). 헬�
 4단계에서 넣은 `FLIPBOOK_ADMIN_PASSWORD`를 DB에 등록합니다.
 
 ```bash
-fly ssh console -C "sh -c 'echo \"\$FLIPBOOK_ADMIN_PASSWORD\" | ./flipbook set-password'"
+fly ssh console -a flipbook-revised -C "sh -c 'printf \"%s\n\" \"\$FLIPBOOK_ADMIN_PASSWORD\" | ./flipbook set-password'"
 ```
 
-`Admin password set successfully.`가 나오면 성공입니다.
+`Admin password set successfully.`가 나오면 성공입니다. (`echo` 대신 `printf`를 쓰는 이유: `sh`의 `echo`는 비밀번호 속 역슬래시를 특수문자로 바꿀 수 있습니다.)
+
+> **주의:** 배포 직후부터 이 단계 전까지는 관리자 화면이 비밀번호 없이 열려 있습니다. `fly deploy`가 끝나면 바로 실행하세요.
 
 ## 7. 확인 체크리스트
 
