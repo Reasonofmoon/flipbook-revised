@@ -68,6 +68,15 @@ var uiText = map[string]uiStrings{
 	},
 }
 
+// resolveUILang picks the UI language: the server-wide setting when it names
+// a language ("ko", "en"), otherwise ("auto") the detected content language.
+func resolveUILang(setting, contentLang string) string {
+	if _, ok := uiText[setting]; ok {
+		return setting
+	}
+	return contentLang
+}
+
 // uiFor returns the UI text for lang, falling back to English.
 func uiFor(lang string) uiStrings {
 	if t, ok := uiText[lang]; ok {

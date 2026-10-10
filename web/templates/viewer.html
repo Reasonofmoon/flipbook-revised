@@ -150,7 +150,7 @@
         {{range $i, $text := .PageTexts}}
         {{if $text}}
         <section>
-            <h2>{{$.T.slide}} {{add $i 1}}</h2>
+            <h2>{{$.SlideLabel}} {{add $i 1}}</h2>
             <p>{{$text}}</p>
         </section>
         {{end}}

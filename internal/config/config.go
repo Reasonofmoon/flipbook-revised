@@ -28,6 +28,10 @@ type Config struct {
 	SessionSecret  string `yaml:"session_secret"`
 	APIKey         string `yaml:"api_key"`
 
+	// UILang forces the viewer UI language ("ko" or "en"); "auto" (default)
+	// follows the language detected from each flipbook's content.
+	UILang string `yaml:"ui_lang"`
+
 	// APIKeyFile is the file holding the API key when none was configured
 	// (empty if the key came from config/env, or could not be persisted).
 	APIKeyFile string `yaml:"-"`
@@ -101,6 +105,10 @@ func Load() *Config {
 	if v := os.Getenv("FLIPBOOK_API_KEY"); v != "" {
 		cfg.APIKey = v
 	}
+	if v := os.Getenv("FLIPBOOK_UI_LANG"); v != "" {
+		cfg.UILang = v
+	}
+	cfg.UILang = normalizeUILang(cfg.UILang)
 
 	if cfg.LibreOfficeBin == "" {
 		cfg.LibreOfficeBin = findLibreOffice()
@@ -127,6 +135,20 @@ func Load() *Config {
 	}
 
 	return cfg
+}
+
+// normalizeUILang returns "auto", "ko" or "en"; anything else falls back to
+// "auto" with a warning.
+func normalizeUILang(v string) string {
+	switch v = strings.ToLower(strings.TrimSpace(v)); v {
+	case "", "auto":
+		return "auto"
+	case "ko", "en":
+		return v
+	default:
+		log.Printf("WARNING: unsupported ui_lang %q; using auto (supported: auto, ko, en)", v)
+		return "auto"
+	}
 }
 
 const apiKeyFileName = "api_key"

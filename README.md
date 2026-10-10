@@ -71,6 +71,7 @@ cp .env.example .env
 | `FLIPBOOK_API_KEY` | Bearer token for the API and MCP. Required |
 | `FLIPBOOK_SESSION_SECRET` | Session signing key. Required |
 | `FLIPBOOK_ADMIN_PASSWORD` | Admin login password, 8+ characters, no spaces |
+| `FLIPBOOK_UI_LANG` | Viewer UI language: `auto` (default, follows each flipbook's content), `ko`, or `en` |
 
 Generate random values for the key and secret:
 
@@ -155,6 +156,7 @@ Key settings:
 | `mongo_uri` | `FLIPBOOK_MONGO_URI` | — | MongoDB connection string |
 | `session_secret` | `FLIPBOOK_SESSION_SECRET` | auto-generated | Session signing key |
 | `api_key` | `FLIPBOOK_API_KEY` | auto-generated | Bearer token for API/MCP auth |
+| `ui_lang` | `FLIPBOOK_UI_LANG` | `auto` | Viewer UI language (`auto`, `ko`, `en`). `<html lang>` always follows the content |
 
 ## Usage
 

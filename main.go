@@ -244,8 +244,8 @@ func runServer() {
 
 	// Setup handlers
 	adminH := handlers.NewAdminHandler(db, store, w, tmpl, cfg.BaseURL)
-	viewerH := handlers.NewViewerHandler(db, store, tmpl, cfg.BaseURL)
-	embedH := handlers.NewEmbedHandler(db, store, tmpl, cfg.BaseURL)
+	viewerH := handlers.NewViewerHandler(db, store, tmpl, cfg.BaseURL, cfg.UILang)
+	embedH := handlers.NewEmbedHandler(db, store, tmpl, cfg.BaseURL, cfg.UILang)
 	apiH := handlers.NewAPIHandler(db, store, w, cfg.BaseURL)
 
 	// Setup router
@@ -330,6 +330,7 @@ func runServer() {
 		log.Printf("API key:   %s", maskSecret(cfg.APIKey))
 	}
 	log.Printf("LibreOffice: %s", cfg.LibreOfficeBin)
+	log.Printf("UI language: %s", cfg.UILang)
 
 	// Graceful shutdown
 	go func() {

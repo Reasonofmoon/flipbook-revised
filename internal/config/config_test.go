@@ -104,3 +104,20 @@ func TestLoadOrCreateAPIKey_RefusesSymlink(t *testing.T) {
 		t.Fatal("symlink target must not be modified")
 	}
 }
+
+func TestNormalizeUILang(t *testing.T) {
+	tests := map[string]string{
+		"":      "auto",
+		"auto":  "auto",
+		"ko":    "ko",
+		" KO ":  "ko",
+		"en":    "en",
+		"ja":    "auto",
+		"korea": "auto",
+	}
+	for in, want := range tests {
+		if got := normalizeUILang(in); got != want {
+			t.Errorf("normalizeUILang(%q) = %q, want %q", in, got, want)
+		}
+	}
+}

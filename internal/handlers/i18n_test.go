@@ -27,3 +27,17 @@ func TestUIForFallsBackToEnglish(t *testing.T) {
 		t.Fatalf(`uiFor("ko")["copy"] = %q, want "복사"`, got)
 	}
 }
+
+func TestResolveUILang(t *testing.T) {
+	tests := []struct{ setting, content, want string }{
+		{"auto", "en", "en"},
+		{"auto", "ko", "ko"},
+		{"ko", "en", "ko"}, // English-only deck shown with Korean UI
+		{"en", "ko", "en"},
+	}
+	for _, tt := range tests {
+		if got := resolveUILang(tt.setting, tt.content); got != tt.want {
+			t.Errorf("resolveUILang(%q, %q) = %q, want %q", tt.setting, tt.content, got, tt.want)
+		}
+	}
+}

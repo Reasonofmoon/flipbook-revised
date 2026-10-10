@@ -20,10 +20,11 @@ type ViewerHandler struct {
 	storage *storage.Storage
 	tmpl    *template.Template
 	baseURL string
+	uiLang  string // "auto", "ko" or "en"
 }
 
-func NewViewerHandler(db *database.DB, store *storage.Storage, tmpl *template.Template, baseURL string) *ViewerHandler {
-	return &ViewerHandler{db: db, storage: store, tmpl: tmpl, baseURL: baseURL}
+func NewViewerHandler(db *database.DB, store *storage.Storage, tmpl *template.Template, baseURL, uiLang string) *ViewerHandler {
+	return &ViewerHandler{db: db, storage: store, tmpl: tmpl, baseURL: baseURL, uiLang: uiLang}
 }
 
 func (h *ViewerHandler) View(w http.ResponseWriter, r *http.Request) {
@@ -45,7 +46,7 @@ func (h *ViewerHandler) View(w http.ResponseWriter, r *http.Request) {
 			"Flipbook": fb,
 			"BaseURL":  h.baseURL,
 			"Lang":     lang,
-			"T":        uiFor(lang),
+			"T":        uiFor(resolveUILang(h.uiLang, lang)),
 		})
 		return
 	default:
@@ -93,7 +94,9 @@ func (h *ViewerHandler) View(w http.ResponseWriter, r *http.Request) {
 		"MetaDesc":      metaDesc,
 		"EmbedCode":     embedCode(h.baseURL, fb.Slug),
 		"Lang":          lang,
-		"T":             uiFor(lang),
+		"T":             uiFor(resolveUILang(h.uiLang, lang)),
+		// Hidden SEO headings are content, so they follow the content language
+		"SlideLabel": uiFor(lang)["slide"],
 	})
 }
 

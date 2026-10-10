@@ -16,10 +16,11 @@ type EmbedHandler struct {
 	storage *storage.Storage
 	tmpl    *template.Template
 	baseURL string
+	uiLang  string // "auto", "ko" or "en"
 }
 
-func NewEmbedHandler(db *database.DB, store *storage.Storage, tmpl *template.Template, baseURL string) *EmbedHandler {
-	return &EmbedHandler{db: db, storage: store, tmpl: tmpl, baseURL: baseURL}
+func NewEmbedHandler(db *database.DB, store *storage.Storage, tmpl *template.Template, baseURL, uiLang string) *EmbedHandler {
+	return &EmbedHandler{db: db, storage: store, tmpl: tmpl, baseURL: baseURL, uiLang: uiLang}
 }
 
 func (h *EmbedHandler) Embed(w http.ResponseWriter, r *http.Request) {
@@ -44,7 +45,7 @@ func (h *EmbedHandler) Embed(w http.ResponseWriter, r *http.Request) {
 			"Flipbook": fb,
 			"BaseURL":  h.baseURL,
 			"Lang":     lang,
-			"T":        uiFor(lang),
+			"T":        uiFor(resolveUILang(h.uiLang, lang)),
 		})
 		return
 	default:
@@ -74,6 +75,6 @@ func (h *EmbedHandler) Embed(w http.ResponseWriter, r *http.Request) {
 		"PageTextsJSON": template.JS(pageTextsJSON),
 		"BaseURL":       h.baseURL,
 		"Lang":          lang,
-		"T":             uiFor(lang),
+		"T":             uiFor(resolveUILang(h.uiLang, lang)),
 	})
 }
