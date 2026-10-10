@@ -320,7 +320,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function getShareURL(withPage) {
-        var base = (data.baseURL || '') + '/v/' + (data.slug || '');
+        var base = (data.baseURL || '') + '/v/' + encodeURIComponent(data.slug || '');
         if (withPage && currentPage > 0) {
             return base + '?page=' + (currentPage + 1);
         }
@@ -328,7 +328,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function getEmbedURL(withPage) {
-        var base = (data.baseURL || '') + '/embed/' + (data.slug || '');
+        var base = (data.baseURL || '') + '/embed/' + encodeURIComponent(data.slug || '');
         if (withPage && currentPage > 0) {
             return base + '?page=' + (currentPage + 1);
         }
