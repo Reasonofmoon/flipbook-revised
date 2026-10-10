@@ -14,6 +14,8 @@
 - [x] G2. 문서 언어 표시: 한글 비율 20% 이상이면 `lang="ko"` + meta description 글자 단위 자르기 — 4a375d6
 - [x] G3. CI: GitHub Actions로 gofmt / go vet / go test / docker build + 한글 폰트 확인 — cdbd027(gofmt 정리) 포함
 
+- [x] 뷰어 UI 한국어화 (문서 언어에 따라 ko/en) — 7089303, 공유 링크 인코딩 — 0df719f
+
 ## 결정 필요 (사용자)
-- [ ] 뷰어 UI 한국어화 (Share, Copy, All Pages 등 문구)
+- [ ] UI 언어 수동 지정: 영어로만 된 교재(한국 학생용)는 자동 판별로 영어 UI가 됨 → 환경변수 기본값 또는 플립북별 설정
 - [ ] 배포 (Fly.io + MongoDB Atlas, 비용·계정 필요)
