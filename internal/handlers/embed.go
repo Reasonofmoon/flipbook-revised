@@ -40,6 +40,7 @@ func (h *EmbedHandler) Embed(w http.ResponseWriter, r *http.Request) {
 		h.tmpl.ExecuteTemplate(w, "viewer_wait", map[string]interface{}{
 			"Flipbook": fb,
 			"BaseURL":  h.baseURL,
+			"Lang":     detectLang(fb.Title, nil),
 		})
 		return
 	default:
@@ -67,5 +68,6 @@ func (h *EmbedHandler) Embed(w http.ResponseWriter, r *http.Request) {
 		"PageTexts":     pageTexts,
 		"PageTextsJSON": template.JS(pageTextsJSON),
 		"BaseURL":       h.baseURL,
+		"Lang":          detectLang(fb.Title, pageTexts),
 	})
 }

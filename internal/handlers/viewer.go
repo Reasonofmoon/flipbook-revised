@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/jonradoff/flipbook/internal/database"
@@ -40,6 +41,7 @@ func (h *ViewerHandler) View(w http.ResponseWriter, r *http.Request) {
 		h.tmpl.ExecuteTemplate(w, "viewer_wait", map[string]interface{}{
 			"Flipbook": fb,
 			"BaseURL":  h.baseURL,
+			"Lang":     detectLang(fb.Title, nil),
 		})
 		return
 	default:
@@ -85,8 +87,13 @@ func (h *ViewerHandler) View(w http.ResponseWriter, r *http.Request) {
 		"OGImage":       ogImage,
 		"MetaDesc":      metaDesc,
 		"EmbedCode":     embedCode(h.baseURL, fb.Slug),
+		"Lang":          detectLang(fb.Title, pageTexts),
 	})
 }
+
+// maxDescriptionRunes caps the meta description length in characters (not
+// bytes, so Korean text is not cut mid-character).
+const maxDescriptionRunes = 300
 
 // buildDescription generates a meta description from the flipbook title and page text.
 func buildDescription(title string, pageTexts []string) string {
@@ -97,15 +104,15 @@ func buildDescription(title string, pageTexts []string) string {
 		if text == "" {
 			continue
 		}
-		if charCount+len(text) > 300 {
-			remaining := 300 - charCount
+		if remaining := maxDescriptionRunes - charCount; utf8.RuneCountInString(text) > remaining {
 			if remaining > 20 {
-				parts = append(parts, text[:remaining]+"...")
+				cut, _ := truncateRunes(text, remaining)
+				parts = append(parts, cut+"...")
 			}
 			break
 		}
 		parts = append(parts, text)
-		charCount += len(text) + 1
+		charCount += utf8.RuneCountInString(text) + 1
 	}
 	if len(parts) == 0 {
 		return fmt.Sprintf("%s — interactive flipbook with full-page presentation slides.", title)
