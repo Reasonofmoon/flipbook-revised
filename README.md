@@ -137,6 +137,10 @@ make run
 
 The server starts at [http://localhost:8080](http://localhost:8080).
 
+## Deploy to Fly.io
+
+`fly.toml` is set up for this fork (Tokyo region, `/healthz` check, 1GB VM for LibreOffice, volume at `/data`, Korean UI). It uses MongoDB Atlas for the database. See the step-by-step guide (Korean) in [docs/deploy-fly.md](docs/deploy-fly.md).
+
 ## Configuration
 
 Flipbook loads configuration from (in order of priority):

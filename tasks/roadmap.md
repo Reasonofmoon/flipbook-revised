@@ -19,4 +19,4 @@
 ## 결정 필요 (사용자)
 - [x] UI 언어 서버 기본값: FLIPBOOK_UI_LANG (auto/ko/en), html lang·SEO 제목은 내용 언어 유지 — 2f4a419
 - [x] 관리자·로그인 화면 한국어화 (auto면 브라우저 언어) — ba307b2
-- [ ] 배포 (Fly.io + MongoDB Atlas, 비용·계정 필요)
+- [ ] 배포 (Fly.io + MongoDB Atlas): 설정·가이드 준비 완료(docs/deploy-fly.md), 계정 작업과 실제 배포는 사용자
