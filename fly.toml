@@ -1,24 +1,37 @@
-app = "flipbook-metavert"
-primary_region = "iad"
+# Fly.io config for flipbook-revised. See docs/deploy-fly.md.
+# App names are global on Fly: change `app` (and FLIPBOOK_BASE_URL) if taken.
+app = "flipbook-revised"
+primary_region = "nrt" # Tokyo; check `fly platform regions` for closer options
 
 [build]
 
 [env]
   FLIPBOOK_PORT = "8080"
-  FLIPBOOK_BASE_URL = "https://flipbook.metavert.io"
+  FLIPBOOK_BASE_URL = "https://flipbook-revised.fly.dev"
   FLIPBOOK_DATA_DIR = "/data"
   FLIPBOOK_MONGO_DB = "flipbook"
+  FLIPBOOK_UI_LANG = "ko"
+  # Secrets (set with `fly secrets set`, never here):
+  #   FLIPBOOK_MONGO_URI, FLIPBOOK_API_KEY, FLIPBOOK_SESSION_SECRET,
+  #   FLIPBOOK_ADMIN_PASSWORD
 
 [http_service]
   internal_port = 8080
   force_https = true
   auto_stop_machines = "stop"
   auto_start_machines = true
-  min_machines_running = 1
+  min_machines_running = 1 # keep one machine so background conversions finish
+
+  [[http_service.checks]]
+    grace_period = "30s"
+    interval = "30s"
+    timeout = "5s"
+    method = "GET"
+    path = "/healthz"
 
 [[vm]]
   size = "shared-cpu-2x"
-  memory = "1gb"
+  memory = "1gb" # LibreOffice needs headroom; don't go lower
 
 [mounts]
   source = "flipbook_data"
