@@ -45,9 +45,9 @@ type serverInfo struct {
 }
 
 type initResult struct {
-	ProtocolVersion string            `json:"protocolVersion"`
+	ProtocolVersion string             `json:"protocolVersion"`
 	Capabilities    serverCapabilities `json:"capabilities"`
-	ServerInfo      serverInfo        `json:"serverInfo"`
+	ServerInfo      serverInfo         `json:"serverInfo"`
 }
 
 type serverCapabilities struct {
