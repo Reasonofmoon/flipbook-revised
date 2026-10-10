@@ -71,7 +71,7 @@ cp .env.example .env
 | `FLIPBOOK_API_KEY` | Bearer token for the API and MCP. Required |
 | `FLIPBOOK_SESSION_SECRET` | Session signing key. Required |
 | `FLIPBOOK_ADMIN_PASSWORD` | Admin login password, 8+ characters, no spaces |
-| `FLIPBOOK_UI_LANG` | Viewer UI language: `auto` (default, follows each flipbook's content), `ko`, or `en` |
+| `FLIPBOOK_UI_LANG` | UI language for the viewer and admin pages: `auto` (default), `ko`, or `en`. With `auto`, the viewer follows each flipbook's content and the admin pages follow the browser language |
 
 Generate random values for the key and secret:
 
@@ -156,7 +156,7 @@ Key settings:
 | `mongo_uri` | `FLIPBOOK_MONGO_URI` | — | MongoDB connection string |
 | `session_secret` | `FLIPBOOK_SESSION_SECRET` | auto-generated | Session signing key |
 | `api_key` | `FLIPBOOK_API_KEY` | auto-generated | Bearer token for API/MCP auth |
-| `ui_lang` | `FLIPBOOK_UI_LANG` | `auto` | Viewer UI language (`auto`, `ko`, `en`). `<html lang>` always follows the content |
+| `ui_lang` | `FLIPBOOK_UI_LANG` | `auto` | UI language for viewer and admin (`auto`, `ko`, `en`). `auto`: viewer follows content, admin follows the browser. `<html lang>` on viewer pages always follows the content |
 
 ## Usage
 

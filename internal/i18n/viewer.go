@@ -1,11 +1,12 @@
-package handlers
+// Package i18n holds user-facing UI text for the viewer and admin pages.
+package i18n
 
-// uiStrings holds the viewer's user-facing text for one language.
-type uiStrings map[string]string
+// Strings holds user-facing text for one language, keyed by message ID.
+type Strings map[string]string
 
-// uiText maps a language tag (as returned by detectLang) to viewer UI text.
-// Every language must define every key in "en"; see TestUITextComplete.
-var uiText = map[string]uiStrings{
+// viewerText maps a language tag to viewer UI text.
+// Every language must define every key in "en"; see TestTablesComplete.
+var viewerText = map[string]Strings{
 	"en": {
 		"prev_page":          "Previous page",
 		"next_page":          "Next page",
@@ -68,19 +69,23 @@ var uiText = map[string]uiStrings{
 	},
 }
 
-// resolveUILang picks the UI language: the server-wide setting when it names
-// a language ("ko", "en"), otherwise ("auto") the detected content language.
-func resolveUILang(setting, contentLang string) string {
-	if _, ok := uiText[setting]; ok {
+// ResolveViewer picks the viewer UI language: the server-wide setting when it
+// names a language ("ko", "en"), otherwise ("auto") the content language.
+func ResolveViewer(setting, contentLang string) string {
+	if _, ok := viewerText[setting]; ok {
 		return setting
 	}
 	return contentLang
 }
 
-// uiFor returns the UI text for lang, falling back to English.
-func uiFor(lang string) uiStrings {
-	if t, ok := uiText[lang]; ok {
+// Viewer returns the viewer UI text for lang, falling back to English.
+func Viewer(lang string) Strings {
+	return lookup(viewerText, lang)
+}
+
+func lookup(table map[string]Strings, lang string) Strings {
+	if t, ok := table[lang]; ok {
 		return t
 	}
-	return uiText["en"]
+	return table["en"]
 }

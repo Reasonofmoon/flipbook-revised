@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/jonradoff/flipbook/internal/database"
+	"github.com/jonradoff/flipbook/internal/i18n"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -24,10 +25,22 @@ type Auth struct {
 	db     *database.DB
 	secret string
 	tmpl   *template.Template
+	uiLang string // "auto", "ko" or "en"
 }
 
-func New(db *database.DB, secret string, tmpl *template.Template) *Auth {
-	return &Auth{db: db, secret: secret, tmpl: tmpl}
+func New(db *database.DB, secret string, tmpl *template.Template, uiLang string) *Auth {
+	return &Auth{db: db, secret: secret, tmpl: tmpl, uiLang: uiLang}
+}
+
+// loginData builds the login template data in the request's UI language.
+func (a *Auth) loginData(r *http.Request, errKey string) map[string]interface{} {
+	lang := i18n.ResolveAdmin(a.uiLang, r.Header.Get("Accept-Language"))
+	t := i18n.Admin(lang)
+	errMsg := ""
+	if errKey != "" {
+		errMsg = t[errKey]
+	}
+	return map[string]interface{}{"Lang": lang, "T": t, "Error": errMsg}
 }
 
 // SetPassword hashes and stores the admin password in MongoDB.
@@ -129,9 +142,7 @@ func (a *Auth) LoginPage(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/admin", http.StatusFound)
 		return
 	}
-	a.tmpl.ExecuteTemplate(w, "login", map[string]interface{}{
-		"Error": "",
-	})
+	a.tmpl.ExecuteTemplate(w, "login", a.loginData(r, ""))
 }
 
 // LoginSubmit processes the login form.
@@ -146,9 +157,7 @@ func (a *Auth) LoginSubmit(w http.ResponseWriter, r *http.Request) {
 	// Rate-limit brute force with a small delay
 	time.Sleep(500 * time.Millisecond)
 
-	a.tmpl.ExecuteTemplate(w, "login", map[string]interface{}{
-		"Error": "Invalid password",
-	})
+	a.tmpl.ExecuteTemplate(w, "login", a.loginData(r, "invalid_password"))
 }
 
 // LogoutHandler handles the logout action.

@@ -1,10 +1,10 @@
 {{define "admin_index"}}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{if .Lang}}{{.Lang}}{{else}}en{{end}}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flipbook - Dashboard</title>
+    <title>Flipbook - {{.T.dashboard}}</title>
     <link rel="icon" type="image/svg+xml" href="/static/img/favicon.svg">
     <link rel="stylesheet" href="/static/css/style.css">
 </head>
@@ -12,15 +12,15 @@
     <nav class="navbar">
         <a href="/admin" class="logo">Flipbook</a>
         <div class="nav-links">
-            <a href="/admin" class="active">Dashboard</a>
-            <a href="/admin/upload" class="btn btn-primary btn-sm">+ Upload</a>
+            <a href="/admin" class="active">{{.T.dashboard}}</a>
+            <a href="/admin/upload" class="btn btn-primary btn-sm">{{.T.upload_btn}}</a>
             <form method="POST" action="/logout" style="margin:0;display:inline;">
-                <button type="submit" class="btn btn-sm" style="border:none;color:var(--text-muted);cursor:pointer;">Logout</button>
+                <button type="submit" class="btn btn-sm" style="border:none;color:var(--text-muted);cursor:pointer;">{{.T.logout}}</button>
             </form>
         </div>
     </nav>
     <main class="container">
-        <h1>Your Flipbooks</h1>
+        <h1>{{.T.your_flipbooks}}</h1>
         {{if .Flipbooks}}
         <div class="grid">
             {{range .Flipbooks}}
@@ -43,8 +43,8 @@
                 <div class="card-body">
                     <h3>{{.Title}}</h3>
                     <div class="card-meta">
-                        <span class="badge badge-{{.Status}}">{{.Status}}</span>
-                        {{if .PageCount}}<span>{{.PageCount}} pages</span>{{end}}
+                        <span class="badge badge-{{.Status}}">{{index $.T (printf "status_%s" .Status)}}</span>
+                        {{if .PageCount}}<span>{{.PageCount}}{{$.T.pages_unit}}</span>{{end}}
                     </div>
                 </div>
             </a>
@@ -52,9 +52,9 @@
         </div>
         {{else}}
         <div class="empty-state">
-            <h2>No flipbooks yet</h2>
-            <p>Upload a PowerPoint file to create your first flipbook.</p>
-            <a href="/admin/upload" class="btn btn-primary">Upload PowerPoint</a>
+            <h2>{{.T.no_flipbooks}}</h2>
+            <p>{{.T.empty_hint}}</p>
+            <a href="/admin/upload" class="btn btn-primary">{{.T.empty_cta}}</a>
         </div>
         {{end}}
     </main>

@@ -27,5 +27,6 @@ thumbnail_dpi: 72           # Thumbnail images
 session_secret: ""          # Random 64-char hex string; auto-generated if blank
 api_key: ""                 # Bearer token for API/MCP access; auto-generated if blank
 
-# Viewer UI language: "auto" follows each flipbook's content; "ko" or "en" forces it
+# UI language for viewer and admin pages: "auto", "ko" or "en"
+# ("auto": viewer follows each flipbook's content, admin follows the browser)
 ui_lang: "auto"

@@ -17,6 +17,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/jonradoff/flipbook/internal/database"
+	"github.com/jonradoff/flipbook/internal/i18n"
 	"github.com/jonradoff/flipbook/internal/models"
 	"github.com/jonradoff/flipbook/internal/storage"
 	"github.com/jonradoff/flipbook/internal/worker"
@@ -29,16 +30,27 @@ type AdminHandler struct {
 	worker  *worker.Worker
 	tmpl    *template.Template
 	baseURL string
+	uiLang  string // "auto", "ko" or "en"
 }
 
-func NewAdminHandler(db *database.DB, store *storage.Storage, w *worker.Worker, tmpl *template.Template, baseURL string) *AdminHandler {
-	return &AdminHandler{db: db, storage: store, worker: w, tmpl: tmpl, baseURL: baseURL}
+func NewAdminHandler(db *database.DB, store *storage.Storage, w *worker.Worker, tmpl *template.Template, baseURL, uiLang string) *AdminHandler {
+	return &AdminHandler{db: db, storage: store, worker: w, tmpl: tmpl, baseURL: baseURL, uiLang: uiLang}
+}
+
+// lang returns the admin UI language for this request.
+func (h *AdminHandler) lang(r *http.Request) string {
+	return i18n.ResolveAdmin(h.uiLang, r.Header.Get("Accept-Language"))
+}
+
+// t returns the admin UI text for this request.
+func (h *AdminHandler) t(r *http.Request) i18n.Strings {
+	return i18n.Admin(h.lang(r))
 }
 
 func (h *AdminHandler) Index(w http.ResponseWriter, r *http.Request) {
 	flipbooks, err := h.db.ListFlipbooks()
 	if err != nil {
-		http.Error(w, "Failed to list flipbooks", 500)
+		http.Error(w, h.t(r)["err_list_failed"], 500)
 		return
 	}
 	// Build first-thumb URL map keyed by flipbook ID
@@ -50,6 +62,8 @@ func (h *AdminHandler) Index(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	h.tmpl.ExecuteTemplate(w, "admin_index", map[string]interface{}{
+		"Lang":      h.lang(r),
+		"T":         h.t(r),
 		"Flipbooks": flipbooks,
 		"BaseURL":   h.baseURL,
 		"ThumbMap":  thumbMap,
@@ -57,27 +71,30 @@ func (h *AdminHandler) Index(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *AdminHandler) UploadForm(w http.ResponseWriter, r *http.Request) {
-	h.tmpl.ExecuteTemplate(w, "admin_upload", nil)
+	h.tmpl.ExecuteTemplate(w, "admin_upload", map[string]interface{}{
+		"Lang": h.lang(r),
+		"T":    h.t(r),
+	})
 }
 
 func (h *AdminHandler) Upload(w http.ResponseWriter, r *http.Request) {
 	r.Body = http.MaxBytesReader(w, r.Body, 100<<20) // 100MB
 
 	if err := r.ParseMultipartForm(100 << 20); err != nil {
-		http.Error(w, "File too large (max 100MB)", 400)
+		http.Error(w, h.t(r)["err_too_large"], 400)
 		return
 	}
 
 	file, header, err := r.FormFile("file")
 	if err != nil {
-		http.Error(w, "No file provided", 400)
+		http.Error(w, h.t(r)["err_no_file"], 400)
 		return
 	}
 	defer file.Close()
 
 	ext := strings.ToLower(filepath.Ext(header.Filename))
 	if ext != ".pptx" && ext != ".ppt" && ext != ".pdf" {
-		http.Error(w, "Only .pptx, .ppt, and .pdf files are supported", 400)
+		http.Error(w, h.t(r)["err_bad_type"], 400)
 		return
 	}
 
@@ -92,7 +109,7 @@ func (h *AdminHandler) Upload(w http.ResponseWriter, r *http.Request) {
 	srcPath, err := h.storage.SaveUpload(id, header.Filename, file)
 	if err != nil {
 		log.Printf("Failed to save upload: %v", err)
-		http.Error(w, "Failed to save file", 500)
+		http.Error(w, h.t(r)["err_save_failed"], 500)
 		return
 	}
 
@@ -106,7 +123,7 @@ func (h *AdminHandler) Upload(w http.ResponseWriter, r *http.Request) {
 	}
 	if err := h.db.CreateFlipbook(fb); err != nil {
 		log.Printf("Failed to create flipbook record: %v", err)
-		http.Error(w, "Failed to create flipbook", 500)
+		http.Error(w, h.t(r)["err_create_failed"], 500)
 		return
 	}
 
@@ -149,7 +166,7 @@ func (h *AdminHandler) Detail(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	fb, err := h.db.GetFlipbook(id)
 	if err != nil {
-		http.Error(w, "Flipbook not found", 404)
+		http.Error(w, h.t(r)["err_not_found"], 404)
 		return
 	}
 
@@ -163,6 +180,8 @@ func (h *AdminHandler) Detail(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.tmpl.ExecuteTemplate(w, "admin_detail", map[string]interface{}{
+		"Lang":      h.lang(r),
+		"T":         h.t(r),
 		"Flipbook":  fb,
 		"Thumbs":    thumbs,
 		"Views":     views,
@@ -206,14 +225,14 @@ var googleSlidesRe = regexp.MustCompile(`/presentation/d/([a-zA-Z0-9_-]+)`)
 func (h *AdminHandler) ImportURL(w http.ResponseWriter, r *http.Request) {
 	url := strings.TrimSpace(r.FormValue("url"))
 	if url == "" {
-		http.Error(w, "No URL provided", 400)
+		http.Error(w, h.t(r)["err_no_url"], 400)
 		return
 	}
 
 	// Extract Google Slides presentation ID
 	matches := googleSlidesRe.FindStringSubmatch(url)
 	if len(matches) < 2 {
-		http.Error(w, "Invalid Google Slides URL. Use a URL like: https://docs.google.com/presentation/d/PRESENTATION_ID/edit", 400)
+		http.Error(w, h.t(r)["err_bad_url"], 400)
 		return
 	}
 	presentationID := matches[1]
@@ -223,13 +242,13 @@ func (h *AdminHandler) ImportURL(w http.ResponseWriter, r *http.Request) {
 	resp, err := http.Get(exportURL)
 	if err != nil {
 		log.Printf("Failed to download Google Slides: %v", err)
-		http.Error(w, "Failed to download presentation. Make sure the presentation is publicly accessible (Anyone with the link).", 400)
+		http.Error(w, h.t(r)["err_download_failed"], 400)
 		return
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
-		http.Error(w, "Failed to download presentation. Make sure the presentation is publicly accessible (Anyone with the link).", 400)
+		http.Error(w, h.t(r)["err_download_failed"], 400)
 		return
 	}
 
@@ -245,7 +264,7 @@ func (h *AdminHandler) ImportURL(w http.ResponseWriter, r *http.Request) {
 	srcPath, err := h.storage.SaveUpload(id, "import.pdf", resp.Body)
 	if err != nil {
 		log.Printf("Failed to save downloaded PDF: %v", err)
-		http.Error(w, "Failed to save file", 500)
+		http.Error(w, h.t(r)["err_save_failed"], 500)
 		return
 	}
 
@@ -258,7 +277,7 @@ func (h *AdminHandler) ImportURL(w http.ResponseWriter, r *http.Request) {
 	}
 	if err := h.db.CreateFlipbook(fb); err != nil {
 		log.Printf("Failed to create flipbook record: %v", err)
-		http.Error(w, "Failed to create flipbook", 500)
+		http.Error(w, h.t(r)["err_create_failed"], 500)
 		return
 	}
 

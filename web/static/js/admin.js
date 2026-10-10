@@ -9,11 +9,24 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (!form && !importForm) return;
 
+    // UI text injected by the server (window.ADMIN_I18N); English fallback.
+    // Placeholders like {n} are replaced from vars.
+    var I18N = window.ADMIN_I18N || {};
+    function t(key, fallback, vars) {
+        var s = I18N[key] || fallback;
+        if (vars) {
+            Object.keys(vars).forEach(function(k) {
+                s = s.split('{' + k + '}').join(vars[k]);
+            });
+        }
+        return s;
+    }
+
     // Tab switching
     var tabs = document.querySelectorAll('.upload-tab');
     tabs.forEach(function(tab) {
         tab.addEventListener('click', function() {
-            tabs.forEach(function(t) { t.classList.remove('active'); });
+            tabs.forEach(function(other) { other.classList.remove('active'); });
             tab.classList.add('active');
             document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
             document.getElementById(tab.getAttribute('data-tab')).classList.add('active');
@@ -55,7 +68,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('progress-section').classList.remove('hidden');
 
             var uploadFile = fileInput.files[0];
-            document.getElementById('progress-title').textContent = 'Processing: ' + uploadFile.name;
+            document.getElementById('progress-title').textContent = t('js_processing_file', 'Processing: {name}', {name: uploadFile.name});
 
             activateStep('step-upload');
             document.getElementById('upload-progress').classList.remove('hidden');
@@ -75,7 +88,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                     var detail = Math.round(pct) + '% (' + formatSize(e.loaded) + ' / ' + formatSize(e.total) + ')';
                     if (pct < 100 && remaining > 1) {
-                        detail += ' — ~' + Math.ceil(remaining) + 's remaining';
+                        detail += ' — ' + t('js_remaining', '~{n}s remaining', {n: Math.ceil(remaining)});
                     }
                     document.getElementById('upload-detail').textContent = detail;
                 }
@@ -84,7 +97,7 @@ document.addEventListener('DOMContentLoaded', function() {
             xhr.addEventListener('load', function() {
                 if (xhr.status >= 200 && xhr.status < 400) {
                     completeStep('step-upload');
-                    document.getElementById('upload-detail').textContent = formatSize(uploadFile.size) + ' uploaded';
+                    document.getElementById('upload-detail').textContent = t('js_uploaded', '{size} uploaded', {size: formatSize(uploadFile.size)});
                     document.getElementById('upload-progress').classList.add('hidden');
 
                     try {
@@ -94,12 +107,12 @@ document.addEventListener('DOMContentLoaded', function() {
                         window.location.href = '/admin';
                     }
                 } else {
-                    showError(xhr.responseText || 'Upload failed');
+                    showError(xhr.responseText || t('js_upload_failed', 'Upload failed'));
                 }
             });
 
             xhr.addEventListener('error', function() {
-                showError('Network error — please check your connection and try again.');
+                showError(t('js_network_error', 'Network error — please check your connection and try again.'));
             });
 
             xhr.open('POST', '/admin/upload');
@@ -117,11 +130,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
             document.getElementById('upload-section').classList.add('hidden');
             document.getElementById('progress-section').classList.remove('hidden');
-            document.getElementById('progress-title').textContent = 'Importing presentation...';
+            document.getElementById('progress-title').textContent = t('js_importing', 'Importing presentation...');
 
             // Update step label for URL import
             var uploadLabel = document.getElementById('upload-label');
-            if (uploadLabel) uploadLabel.textContent = 'Downloading from Google Slides';
+            if (uploadLabel) uploadLabel.textContent = t('js_downloading', 'Downloading from Google Slides');
 
             activateStep('step-upload');
             document.getElementById('upload-progress').classList.add('hidden');
@@ -132,7 +145,7 @@ document.addEventListener('DOMContentLoaded', function() {
             xhr.addEventListener('load', function() {
                 if (xhr.status >= 200 && xhr.status < 400) {
                     completeStep('step-upload');
-                    document.getElementById('upload-detail').textContent = 'Downloaded';
+                    document.getElementById('upload-detail').textContent = t('js_downloaded', 'Downloaded');
 
                     try {
                         var response = JSON.parse(xhr.responseText);
@@ -141,12 +154,12 @@ document.addEventListener('DOMContentLoaded', function() {
                         window.location.href = '/admin';
                     }
                 } else {
-                    showError(xhr.responseText || 'Import failed');
+                    showError(xhr.responseText || t('js_import_failed', 'Import failed'));
                 }
             });
 
             xhr.addEventListener('error', function() {
-                showError('Network error — please check your connection and try again.');
+                showError(t('js_network_error', 'Network error — please check your connection and try again.'));
             });
 
             xhr.open('POST', '/admin/import');
@@ -157,7 +170,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function startPolling(flipbookId) {
         activateStep('step-queue');
-        document.getElementById('queue-detail').textContent = 'Waiting for conversion worker...';
+        document.getElementById('queue-detail').textContent = t('js_waiting_worker', 'Waiting for conversion worker...');
         var convertStart = null;
 
         var pollInterval = setInterval(function() {
@@ -166,30 +179,30 @@ document.addEventListener('DOMContentLoaded', function() {
                 .then(function(data) {
                     if (data.status === 'pending') {
                         activateStep('step-queue');
-                        document.getElementById('queue-detail').textContent = 'Waiting for conversion worker...';
+                        document.getElementById('queue-detail').textContent = t('js_waiting_worker', 'Waiting for conversion worker...');
                     } else if (data.status === 'converting') {
                         completeStep('step-queue');
-                        document.getElementById('queue-detail').textContent = 'Picked up by worker';
+                        document.getElementById('queue-detail').textContent = t('js_picked_up', 'Picked up by worker');
                         activateStep('step-convert');
                         if (!convertStart) convertStart = Date.now();
                         var elapsed = Math.round((Date.now() - convertStart) / 1000);
                         document.getElementById('convert-detail').textContent =
-                            'Converting pages to images... (' + elapsed + 's elapsed)';
+                            t('js_converting', 'Converting pages to images... ({n}s elapsed)', {n: elapsed});
                     } else if (data.status === 'ready') {
                         clearInterval(pollInterval);
                         completeStep('step-queue');
                         completeStep('step-convert');
-                        document.getElementById('convert-detail').textContent = data.page_count + ' pages rendered';
+                        document.getElementById('convert-detail').textContent = t('js_pages_rendered', '{n} pages rendered', {n: data.page_count});
                         completeStep('step-done');
                         document.getElementById('done-detail').innerHTML =
-                            '<a href="/v/' + data.slug + '" class="btn btn-primary" style="margin-top:8px;">View Flipbook</a> ' +
-                            '<a href="/admin/flipbooks/' + flipbookId + '" class="btn" style="margin-top:8px;">Manage</a>';
-                        document.getElementById('progress-title').textContent = 'Flipbook ready!';
+                            '<a href="/v/' + encodeURIComponent(data.slug) + '" class="btn btn-primary" style="margin-top:8px;">' + t('js_view_flipbook', 'View Flipbook') + '</a> ' +
+                            '<a href="/admin/flipbooks/' + flipbookId + '" class="btn" style="margin-top:8px;">' + t('js_manage', 'Manage') + '</a>';
+                        document.getElementById('progress-title').textContent = t('js_ready_title', 'Flipbook ready!');
                     } else if (data.status === 'error') {
                         clearInterval(pollInterval);
                         completeStep('step-queue');
                         failStep('step-convert');
-                        showError(data.error || 'Conversion failed');
+                        showError(data.error || t('js_conversion_failed', 'Conversion failed'));
                     }
                 })
                 .catch(function() {

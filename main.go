@@ -235,7 +235,7 @@ func runServer() {
 	tmpl := parseTemplates()
 
 	// Initialize auth
-	a := auth.New(db, cfg.SessionSecret, tmpl)
+	a := auth.New(db, cfg.SessionSecret, tmpl, cfg.UILang)
 
 	// Warn if no password is set
 	if !a.HasPassword() {
@@ -243,7 +243,7 @@ func runServer() {
 	}
 
 	// Setup handlers
-	adminH := handlers.NewAdminHandler(db, store, w, tmpl, cfg.BaseURL)
+	adminH := handlers.NewAdminHandler(db, store, w, tmpl, cfg.BaseURL, cfg.UILang)
 	viewerH := handlers.NewViewerHandler(db, store, tmpl, cfg.BaseURL, cfg.UILang)
 	embedH := handlers.NewEmbedHandler(db, store, tmpl, cfg.BaseURL, cfg.UILang)
 	apiH := handlers.NewAPIHandler(db, store, w, cfg.BaseURL)

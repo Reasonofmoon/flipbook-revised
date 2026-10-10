@@ -1,10 +1,10 @@
 {{define "login"}}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{if .Lang}}{{.Lang}}{{else}}en{{end}}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Flipbook</title>
+    <title>{{.T.login_page_title}} - Flipbook</title>
     <link rel="icon" type="image/svg+xml" href="/static/img/favicon.svg">
     <link rel="stylesheet" href="/static/css/style.css">
     <style>
@@ -48,18 +48,18 @@
     </nav>
     <main class="login-wrapper">
         <div class="login-card">
-            <h1>Admin Login</h1>
-            <p class="subtitle">Enter your password to access the admin area.</p>
+            <h1>{{.T.admin_login}}</h1>
+            <p class="subtitle">{{.T.login_subtitle}}</p>
             {{if .Error}}
             <div class="login-error">{{.Error}}</div>
             {{end}}
             <form method="POST" action="/login">
                 <div class="form-group">
-                    <label for="password">Password</label>
+                    <label for="password">{{.T.password}}</label>
                     <input type="password" id="password" name="password" required autofocus
                         style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);font-size:14px;">
                 </div>
-                <button type="submit" class="btn btn-primary btn-lg">Sign In</button>
+                <button type="submit" class="btn btn-primary btn-lg">{{.T.sign_in}}</button>
             </form>
         </div>
     </main>

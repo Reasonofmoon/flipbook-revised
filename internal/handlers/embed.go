@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/jonradoff/flipbook/internal/database"
+	"github.com/jonradoff/flipbook/internal/i18n"
 	"github.com/jonradoff/flipbook/internal/models"
 	"github.com/jonradoff/flipbook/internal/storage"
 )
@@ -45,7 +46,7 @@ func (h *EmbedHandler) Embed(w http.ResponseWriter, r *http.Request) {
 			"Flipbook": fb,
 			"BaseURL":  h.baseURL,
 			"Lang":     lang,
-			"T":        uiFor(resolveUILang(h.uiLang, lang)),
+			"T":        i18n.Viewer(i18n.ResolveViewer(h.uiLang, lang)),
 		})
 		return
 	default:
@@ -75,6 +76,6 @@ func (h *EmbedHandler) Embed(w http.ResponseWriter, r *http.Request) {
 		"PageTextsJSON": template.JS(pageTextsJSON),
 		"BaseURL":       h.baseURL,
 		"Lang":          lang,
-		"T":             uiFor(resolveUILang(h.uiLang, lang)),
+		"T":             i18n.Viewer(i18n.ResolveViewer(h.uiLang, lang)),
 	})
 }

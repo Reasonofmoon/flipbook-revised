@@ -1,6 +1,6 @@
 {{define "admin_detail"}}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{if .Lang}}{{.Lang}}{{else}}en{{end}}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,25 +12,25 @@
     <nav class="navbar">
         <a href="/admin" class="logo">Flipbook</a>
         <div class="nav-links">
-            <a href="/admin">Dashboard</a>
-            <a href="/admin/upload">Upload</a>
+            <a href="/admin">{{.T.dashboard}}</a>
+            <a href="/admin/upload">{{.T.upload}}</a>
             <form method="POST" action="/logout" style="margin:0;display:inline;">
-                <button type="submit" class="btn btn-sm" style="border:none;color:var(--text-muted);cursor:pointer;">Logout</button>
+                <button type="submit" class="btn btn-sm" style="border:none;color:var(--text-muted);cursor:pointer;">{{.T.logout}}</button>
             </form>
         </div>
     </nav>
     <main class="container">
-        <a href="/admin" class="back-link">&larr; Back to dashboard</a>
+        <a href="/admin" class="back-link">{{.T.back_to_dashboard}}</a>
 
         <div class="detail-header">
             <h1>{{.Flipbook.Title}}</h1>
-            <span class="badge badge-{{.Flipbook.Status}}">{{.Flipbook.Status}}</span>
+            <span class="badge badge-{{.Flipbook.Status}}">{{index .T (printf "status_%s" .Flipbook.Status)}}</span>
         </div>
 
         {{if eq .Flipbook.Status "regenerating"}}
         <div class="status-card converting">
             <div class="spinner"></div>
-            <p>Restoring flipbook from backup and reconverting... This may take a few minutes.</p>
+            <p>{{.T.msg_regenerating}}</p>
         </div>
         <script>
             setTimeout(function() { location.reload(); }, 5000);
@@ -40,7 +40,7 @@
         {{if eq .Flipbook.Status "converting"}}
         <div class="status-card converting">
             <div class="spinner"></div>
-            <p>Converting your presentation... This may take a minute.</p>
+            <p>{{.T.msg_converting}}</p>
         </div>
         <script>
             setTimeout(function() { location.reload(); }, 3000);
@@ -49,7 +49,7 @@
 
         {{if eq .Flipbook.Status "pending"}}
         <div class="status-card pending">
-            <p>Queued for conversion...</p>
+            <p>{{.T.msg_pending}}</p>
         </div>
         <script>
             setTimeout(function() { location.reload(); }, 2000);
@@ -58,54 +58,54 @@
 
         {{if eq .Flipbook.Status "error"}}
         <div class="status-card error">
-            <p><strong>Conversion failed:</strong> {{.Flipbook.ErrorMessage}}</p>
+            <p><strong>{{.T.conversion_failed}}</strong> {{.Flipbook.ErrorMessage}}</p>
         </div>
         {{end}}
 
         {{if eq .Flipbook.Status "ready"}}
         <div class="action-bar">
-            <a href="/v/{{.Flipbook.Slug}}" target="_blank" class="btn btn-primary">View Flipbook</a>
-            <span class="text-muted">{{.Flipbook.PageCount}} pages &middot; {{.Views}} views</span>
+            <a href="/v/{{.Flipbook.Slug}}" target="_blank" class="btn btn-primary">{{.T.view_flipbook}}</a>
+            <span class="text-muted">{{.Flipbook.PageCount}}{{.T.pages_unit}} &middot; {{.Views}}{{.T.views_unit}}</span>
         </div>
 
         <div class="section">
-            <h2>Embed Code</h2>
+            <h2>{{.T.embed_code}}</h2>
             <div class="embed-code">
                 <textarea readonly id="embed-code" rows="3">{{.EmbedCode}}</textarea>
-                <button class="btn btn-sm" onclick="copyEmbed()">Copy</button>
+                <button class="btn btn-sm" onclick="copyEmbed()">{{.T.copy}}</button>
             </div>
         </div>
 
         <div class="section">
-            <h2>Pages</h2>
+            <h2>{{.T.pages}}</h2>
             <div class="thumb-grid">
                 {{range .Thumbs}}
-                <img src="{{.}}" alt="Page" loading="lazy">
+                <img src="{{.}}" alt="{{$.T.page}}" loading="lazy">
                 {{end}}
             </div>
         </div>
         {{end}}
 
         <div class="section">
-            <h2>Settings</h2>
+            <h2>{{.T.settings}}</h2>
             <form action="/admin/flipbooks/{{.Flipbook.ID}}/settings" method="POST">
                 <div class="form-group">
-                    <label for="title">Title</label>
+                    <label for="title">{{.T.title}}</label>
                     <input type="text" id="title" name="title" value="{{.Flipbook.Title}}">
                 </div>
                 <div class="form-group">
-                    <label for="description">Description</label>
+                    <label for="description">{{.T.description}}</label>
                     <textarea id="description" name="description" rows="3">{{.Flipbook.Description}}</textarea>
                 </div>
-                <button type="submit" class="btn">Save Settings</button>
+                <button type="submit" class="btn">{{.T.save_settings}}</button>
             </form>
         </div>
 
         <div class="section danger-zone">
-            <h2>Danger Zone</h2>
+            <h2>{{.T.danger_zone}}</h2>
             <form action="/admin/flipbooks/{{.Flipbook.ID}}/delete" method="POST"
-                  onsubmit="return confirm('Delete this flipbook permanently?')">
-                <button type="submit" class="btn btn-danger">Delete Flipbook</button>
+                  onsubmit="return confirm({{.T.delete_confirm}})">
+                <button type="submit" class="btn btn-danger">{{.T.delete_flipbook}}</button>
             </form>
         </div>
     </main>
