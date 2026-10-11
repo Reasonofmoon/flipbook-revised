@@ -22,6 +22,9 @@ var adminText = map[string]Strings{
 
 		// Dashboard
 		"your_flipbooks":      "Your Flipbooks",
+		"books_unit":          " flipbooks",
+		"new_tile_title":      "Upload a new deck",
+		"new_tile_hint":       "PPTX, PDF or a Google Slides link",
 		"pages_unit":          " pages",
 		"views_unit":          " views",
 		"no_flipbooks":        "No flipbooks yet",
@@ -118,6 +121,9 @@ var adminText = map[string]Strings{
 		"invalid_password": "비밀번호가 올바르지 않습니다.",
 
 		"your_flipbooks":      "내 플립북",
+		"books_unit":          "권",
+		"new_tile_title":      "새 교재 올리기",
+		"new_tile_hint":       "PPTX, PDF, 구글 슬라이드 링크",
 		"pages_unit":          "페이지",
 		"views_unit":          "회 조회",
 		"no_flipbooks":        "아직 플립북이 없습니다",

@@ -6,11 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Flipbook - {{.T.dashboard}}</title>
     <link rel="icon" type="image/svg+xml" href="/static/img/favicon.svg">
-    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@700&display=swap">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+    <link rel="stylesheet" href="/static/css/style.css?v=3">
 </head>
 <body>
     <nav class="navbar">
-        <a href="/admin" class="logo">Flipbook</a>
+        <a href="/admin" class="logo">READMASTER<span>플립북</span></a>
         <div class="nav-links">
             <a href="/admin" class="active">{{.T.dashboard}}</a>
             <a href="/admin/upload" class="btn btn-primary btn-sm">{{.T.upload_btn}}</a>
@@ -20,7 +24,7 @@
         </div>
     </nav>
     <main class="container">
-        <h1>{{.T.your_flipbooks}}</h1>
+        <h1>{{.T.your_flipbooks}}{{if .Flipbooks}}<span class="count">{{len .Flipbooks}}{{.T.books_unit}}</span>{{end}}</h1>
         {{if .Flipbooks}}
         <div class="grid">
             {{range .Flipbooks}}
@@ -49,6 +53,11 @@
                 </div>
             </a>
             {{end}}
+            <a href="/admin/upload" class="card card-new">
+                <span class="plus" aria-hidden="true">+</span>
+                <strong>{{.T.new_tile_title}}</strong>
+                <span class="hint">{{.T.new_tile_hint}}</span>
+            </a>
         </div>
         {{else}}
         <div class="empty-state">
