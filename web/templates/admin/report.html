@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{if .Client}}{{.Client}}{{else}}{{.T.client_unassigned}}{{end}} {{.T.report_title}} - Flipbook</title>
     <link rel="icon" type="image/svg+xml" href="/static/img/favicon.svg">
-    <link rel="stylesheet" href="/static/css/style.css?v=5">
+    <link rel="stylesheet" href="/static/css/style.css?v=7">
 </head>
 <body class="report-page">
     <nav class="navbar no-print">
@@ -54,7 +54,7 @@
                     <tbody>
                     {{range .Rows}}
                     <tr>
-                        <td><a href="{{$.BaseURL}}/v/{{.FB.Slug}}" target="_blank" rel="noopener">{{.FB.Title}}</a></td>
+                        <td><a href="{{$.BaseURL}}{{.Path}}" target="_blank" rel="noopener">{{.FB.Title}}</a>{{if not .FB.IsPublic}} <span class="visibility-tag">{{$.T.visibility_link}}</span>{{end}}</td>
                         <td class="num">{{.FB.PageCount}}</td>
                         <td class="num">{{.Views}}</td>
                     </tr>

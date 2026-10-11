@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Flipbook - {{.T.dashboard}}</title>
     <link rel="icon" type="image/svg+xml" href="/static/img/favicon.svg">
-    <link rel="stylesheet" href="/static/css/style.css?v=5">
+    <link rel="stylesheet" href="/static/css/style.css?v=7">
 </head>
 <body>
     <nav class="navbar">
@@ -47,6 +47,7 @@
                         <span class="badge badge-{{.Status}}">{{index $.T (printf "status_%s" .Status)}}</span>
                         {{if .PageCount}}<span>{{.PageCount}}{{$.T.pages_unit}}</span>{{end}}
                         {{if .Client}}<span class="client-tag">{{.Client}}</span>{{end}}
+                        {{if not .IsPublic}}<span class="visibility-tag">{{$.T.visibility_link}}</span>{{end}}
                     </div>
                 </div>
             </a>

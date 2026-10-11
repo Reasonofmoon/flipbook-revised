@@ -7,13 +7,13 @@
     <title>{{.Flipbook.Title}}</title>
     <link rel="icon" type="image/svg+xml" href="/static/img/favicon.svg">
     <meta name="description" content="{{.MetaDesc}}">
-    <link rel="canonical" href="{{.CanonicalURL}}">
+    {{if .Private}}<meta name="robots" content="noindex, nofollow">{{else}}<link rel="canonical" href="{{.CanonicalURL}}">{{end}}
 
     <!-- Open Graph -->
     <meta property="og:title" content="{{.Flipbook.Title}}">
     <meta property="og:description" content="{{.MetaDesc}}">
     <meta property="og:type" content="article">
-    <meta property="og:url" content="{{.CanonicalURL}}">
+    {{if not .Private}}<meta property="og:url" content="{{.CanonicalURL}}">{{end}}
     {{if .OGImage}}<meta property="og:image" content="{{.OGImage}}">{{end}}
 
     <!-- Twitter Card -->
@@ -22,6 +22,7 @@
     <meta name="twitter:description" content="{{.MetaDesc}}">
     {{if .OGImage}}<meta name="twitter:image" content="{{.OGImage}}">{{end}}
 
+    {{if not .Private}}
     <!-- JSON-LD Structured Data -->
     <script type="application/ld+json">
     {
@@ -35,6 +36,7 @@
         "datePublished": "{{.Flipbook.CreatedAt.Format "2006-01-02"}}"
     }
     </script>
+    {{end}}
 
     <link rel="stylesheet" href="/static/css/viewer.css?v=9">
 </head>
@@ -144,6 +146,7 @@
 
     <!-- SEO: Server-rendered slide content (hidden from visual users, visible to crawlers) -->
     {{if .PageTexts}}
+    {{if not .Private}}
     <article id="seo-content" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;">
         <h1>{{.Flipbook.Title}}</h1>
         {{if .Flipbook.Description}}<p>{{.Flipbook.Description}}</p>{{end}}
@@ -157,12 +160,14 @@
         {{end}}
     </article>
     {{end}}
+    {{end}}
 
     <script>
         window.FLIPBOOK_DATA = {
             id: "{{.Flipbook.ID}}",
             title: "{{.Flipbook.Title}}",
             slug: "{{.Flipbook.Slug}}",
+            accessKey: "{{.AccessKey}}",
             baseURL: "{{.BaseURL}}",
             pageCount: {{.Flipbook.PageCount}},
             pageWidth: {{.Flipbook.PageWidth}},
@@ -174,7 +179,7 @@
         };
     </script>
     <script src="/static/js/page-flip.browser.js"></script>
-    <script src="/static/js/viewer.js?v=11"></script>
+    <script src="/static/js/viewer.js?v=12"></script>
 </body>
 </html>
 {{end}}

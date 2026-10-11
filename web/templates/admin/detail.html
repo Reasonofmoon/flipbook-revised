@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{.Flipbook.Title}} - Flipbook</title>
     <link rel="icon" type="image/svg+xml" href="/static/img/favicon.svg">
-    <link rel="stylesheet" href="/static/css/style.css?v=5">
+    <link rel="stylesheet" href="/static/css/style.css?v=7">
 </head>
 <body>
     <nav class="navbar">
@@ -66,7 +66,8 @@
 
         {{if eq .Flipbook.Status "ready"}}
         <div class="action-bar">
-            <a href="/v/{{.Flipbook.Slug}}" target="_blank" class="btn btn-primary">{{.T.view_flipbook}}</a>
+            <a href="{{.ViewerPath}}" target="_blank" class="btn btn-primary">{{.T.view_flipbook}}</a>
+            {{if not .Flipbook.IsPublic}}<span class="visibility-tag">{{.T.visibility_link}}</span>{{end}}
             <span class="text-muted">{{.Flipbook.PageCount}}{{.T.pages_unit}} &middot; {{.Views}}{{.T.views_unit}}</span>
         </div>
 
@@ -103,8 +104,26 @@
                     <label for="client">{{.T.client_label}}</label>
                     <input type="text" id="client" name="client" list="client-list" autocomplete="off" placeholder="{{.T.client_placeholder}}" value="{{.Flipbook.Client}}">
                 </div>
+                <fieldset class="form-group visibility">
+                    <legend>{{.T.visibility}}</legend>
+                    <label class="radio">
+                        <input type="radio" name="visibility" value="public"{{if .Flipbook.IsPublic}} checked{{end}}>
+                        <span><strong>{{.T.visibility_public}}</strong><small>{{.T.visibility_public_hint}}</small></span>
+                    </label>
+                    <label class="radio">
+                        <input type="radio" name="visibility" value="link"{{if not .Flipbook.IsPublic}} checked{{end}}>
+                        <span><strong>{{.T.visibility_link}}</strong><small>{{.T.visibility_link_hint}}</small></span>
+                    </label>
+                </fieldset>
                 <button type="submit" class="btn">{{.T.save_settings}}</button>
             </form>
+            {{if not .Flipbook.IsPublic}}
+            <form action="/admin/flipbooks/{{.Flipbook.ID}}/rotate-key" method="POST" class="rotate-key"
+                  onsubmit="return confirm({{.T.rotate_confirm}})">
+                <p>{{.T.rotate_hint}}</p>
+                <button type="submit" class="btn btn-sm">{{.T.rotate_key}}</button>
+            </form>
+            {{end}}
         </div>
 
         <div class="section danger-zone">

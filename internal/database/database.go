@@ -28,6 +28,7 @@ type flipbookDoc struct {
 	PageWidth    int        `bson:"page_width"`
 	PageHeight   int        `bson:"page_height"`
 	IsPublic     bool       `bson:"is_public"`
+	AccessKey    string     `bson:"access_key,omitempty"`
 	GridFSFileID string     `bson:"gridfs_file_id,omitempty"`
 	CreatedAt    time.Time  `bson:"created_at"`
 	UpdatedAt    time.Time  `bson:"updated_at"`
@@ -57,6 +58,7 @@ func docToModel(d *flipbookDoc) *models.Flipbook {
 		PageWidth:    d.PageWidth,
 		PageHeight:   d.PageHeight,
 		IsPublic:     d.IsPublic,
+		AccessKey:    d.AccessKey,
 		GridFSFileID: d.GridFSFileID,
 		CreatedAt:    d.CreatedAt,
 		UpdatedAt:    d.UpdatedAt,

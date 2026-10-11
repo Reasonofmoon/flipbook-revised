@@ -57,6 +57,7 @@ type clientRow struct {
 type flipbookRow struct {
 	FB    *models.Flipbook
 	Views int
+	Path  string // viewer link, including the access key when link-only
 }
 
 func (h *StatsHandler) lang(r *http.Request) string {
@@ -184,7 +185,7 @@ func (h *StatsHandler) ClientReport(w http.ResponseWriter, r *http.Request) {
 	}
 	rows := make([]flipbookRow, 0, len(mine))
 	for _, fb := range mine {
-		rows = append(rows, flipbookRow{FB: fb, Views: sum.ByFlipbook[fb.ID]})
+		rows = append(rows, flipbookRow{FB: fb, Views: sum.ByFlipbook[fb.ID], Path: viewerPath(fb)})
 	}
 	sortFlipbookRows(rows)
 

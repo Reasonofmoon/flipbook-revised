@@ -23,7 +23,8 @@ type Flipbook struct {
 	ErrorMessage string
 	PageWidth    int
 	PageHeight   int
-	IsPublic     bool
+	IsPublic     bool   // false: only reachable with AccessKey in the link
+	AccessKey    string // random key required as ?k= when not public
 	GridFSFileID string
 	CreatedAt    time.Time
 	UpdatedAt    time.Time

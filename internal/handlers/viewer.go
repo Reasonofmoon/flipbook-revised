@@ -33,9 +33,14 @@ func NewViewerHandler(db *database.DB, store *storage.Storage, tmpl *template.Te
 func (h *ViewerHandler) View(w http.ResponseWriter, r *http.Request) {
 	slug := chi.URLParam(r, "slug")
 	fb, err := h.db.GetFlipbookBySlug(slug)
-	if err != nil {
+	if err != nil || !canView(fb, r) {
+		// Same response for a missing flipbook and a link-only one without
+		// its key, so the slug doesn't reveal that the flipbook exists.
 		http.Error(w, "Flipbook not found", 404)
 		return
+	}
+	if !fb.IsPublic {
+		w.Header().Set("X-Robots-Tag", "noindex, nofollow")
 	}
 
 	// Title-only guess until page text is available (refined below when ready)
@@ -97,7 +102,9 @@ func (h *ViewerHandler) View(w http.ResponseWriter, r *http.Request) {
 		"CanonicalURL":  canonicalURL,
 		"OGImage":       ogImage,
 		"MetaDesc":      metaDesc,
-		"EmbedCode":     embedCode(h.baseURL, fb.Slug),
+		"EmbedCode":     embedCode(h.baseURL, fb),
+		"Private":       !fb.IsPublic,
+		"AccessKey":     pageAccessKey(fb),
 		"Lang":          lang,
 		"T":             i18n.Viewer(i18n.ResolveViewer(h.uiLang, lang)),
 		// Hidden SEO headings are content, so they follow the content language

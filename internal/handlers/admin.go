@@ -7,7 +7,6 @@ import (
 	"html/template"
 	"log"
 	"net/http"
-	"net/url"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -201,14 +200,15 @@ func (h *AdminHandler) Detail(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.tmpl.ExecuteTemplate(w, "admin_detail", map[string]interface{}{
-		"Lang":      h.lang(r),
-		"T":         h.t(r),
-		"Clients":   h.clientNames(),
-		"Flipbook":  fb,
-		"Thumbs":    thumbs,
-		"Views":     views,
-		"BaseURL":   h.baseURL,
-		"EmbedCode": embedCode(h.baseURL, fb.Slug),
+		"Lang":       h.lang(r),
+		"T":          h.t(r),
+		"Clients":    h.clientNames(),
+		"Flipbook":   fb,
+		"Thumbs":     thumbs,
+		"Views":      views,
+		"BaseURL":    h.baseURL,
+		"EmbedCode":  embedCode(h.baseURL, fb),
+		"ViewerPath": viewerPath(fb),
 	})
 }
 
@@ -234,11 +234,27 @@ func (h *AdminHandler) Settings(w http.ResponseWriter, r *http.Request) {
 	if title != "" {
 		h.db.UpdateFlipbook(id, title, desc, strings.TrimSpace(r.FormValue("client")))
 	}
+	switch r.FormValue("visibility") {
+	case "public":
+		h.db.SetVisibility(id, true)
+	case "link":
+		h.db.SetVisibility(id, false)
+	}
 	http.Redirect(w, r, "/admin/flipbooks/"+id, http.StatusSeeOther)
 }
 
-func embedCode(baseURL, slug string) string {
-	return `<iframe src="` + baseURL + `/embed/` + url.PathEscape(slug) + `" width="800" height="600" frameborder="0" allowfullscreen style="border:none;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.1);"></iframe>`
+// RotateKey issues a new access key for a link-only flipbook, so links that
+// were shared before stop working.
+func (h *AdminHandler) RotateKey(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	if _, err := h.db.RotateAccessKey(id); err != nil {
+		log.Printf("Failed to rotate access key for %s: %v", id, err)
+	}
+	http.Redirect(w, r, "/admin/flipbooks/"+id, http.StatusSeeOther)
+}
+
+func embedCode(baseURL string, fb *models.Flipbook) string {
+	return `<iframe src="` + baseURL + embedPath(fb) + `" width="800" height="600" frameborder="0" allowfullscreen style="border:none;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.1);"></iframe>`
 }
 
 // Google Slides URL pattern: extract presentation ID

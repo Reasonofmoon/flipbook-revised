@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {{if .Private}}<meta name="robots" content="noindex, nofollow">{{end}}
     <title>{{.Flipbook.Title}}</title>
     <link rel="icon" type="image/svg+xml" href="/static/img/favicon.svg">
     <link rel="stylesheet" href="/static/css/viewer.css?v=9">
@@ -122,6 +123,7 @@
             id: "{{.Flipbook.ID}}",
             title: "{{.Flipbook.Title}}",
             slug: "{{.Flipbook.Slug}}",
+            accessKey: "{{.AccessKey}}",
             baseURL: "{{.BaseURL}}",
             pageCount: {{.Flipbook.PageCount}},
             pageWidth: {{.Flipbook.PageWidth}},
@@ -133,7 +135,7 @@
         };
     </script>
     <script src="/static/js/page-flip.browser.js"></script>
-    <script src="/static/js/viewer.js?v=11"></script>
+    <script src="/static/js/viewer.js?v=12"></script>
 </body>
 </html>
 {{end}}

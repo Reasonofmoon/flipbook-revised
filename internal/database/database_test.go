@@ -132,3 +132,39 @@ func TestListViewsFiltersByPeriodAndFlipbook(t *testing.T) {
 		t.Fatalf("StorageUsage = %d, %v", n, err)
 	}
 }
+
+func TestVisibilityAndKeyRotation(t *testing.T) {
+	d := openTestDB(t)
+	create(t, d, "id-1", "unit-3")
+
+	fb, _ := d.GetFlipbook("id-1")
+	if !fb.IsPublic || fb.AccessKey != "" {
+		t.Fatalf("new flipbook: public=%v key=%q, want public with no key", fb.IsPublic, fb.AccessKey)
+	}
+
+	if err := d.SetVisibility("id-1", false); err != nil {
+		t.Fatal(err)
+	}
+	fb, _ = d.GetFlipbook("id-1")
+	if fb.IsPublic || len(fb.AccessKey) < 16 {
+		t.Fatalf("link-only: public=%v key=%q, want private with a 16+ char key", fb.IsPublic, fb.AccessKey)
+	}
+	first := fb.AccessKey
+
+	// Toggling back and forth keeps the key, so links already sent still work.
+	d.SetVisibility("id-1", true)
+	d.SetVisibility("id-1", false)
+	fb, _ = d.GetFlipbook("id-1")
+	if fb.AccessKey != first {
+		t.Fatalf("key changed on toggle: %q -> %q", first, fb.AccessKey)
+	}
+
+	rotated, err := d.RotateAccessKey("id-1")
+	if err != nil || rotated == first || len(rotated) < 16 {
+		t.Fatalf("RotateAccessKey = %q, %v (old %q)", rotated, err, first)
+	}
+	fb, _ = d.GetFlipbook("id-1")
+	if fb.AccessKey != rotated {
+		t.Fatalf("stored key %q, want rotated %q", fb.AccessKey, rotated)
+	}
+}

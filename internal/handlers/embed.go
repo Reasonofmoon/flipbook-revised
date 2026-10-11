@@ -27,9 +27,14 @@ func NewEmbedHandler(db *database.DB, store *storage.Storage, tmpl *template.Tem
 func (h *EmbedHandler) Embed(w http.ResponseWriter, r *http.Request) {
 	slug := chi.URLParam(r, "slug")
 	fb, err := h.db.GetFlipbookBySlug(slug)
-	if err != nil {
+	if err != nil || !canView(fb, r) {
+		// Same response for a missing flipbook and a link-only one without
+		// its key, so the slug doesn't reveal that the flipbook exists.
 		http.Error(w, "Flipbook not found", 404)
 		return
+	}
+	if !fb.IsPublic {
+		w.Header().Set("X-Robots-Tag", "noindex, nofollow")
 	}
 
 	w.Header().Set("X-Frame-Options", "ALLOWALL")
@@ -77,6 +82,8 @@ func (h *EmbedHandler) Embed(w http.ResponseWriter, r *http.Request) {
 		"PageTexts":     pageTexts,
 		"PageTextsJSON": template.JS(pageTextsJSON),
 		"BaseURL":       h.baseURL,
+		"Private":       !fb.IsPublic,
+		"AccessKey":     pageAccessKey(fb),
 		"Lang":          lang,
 		"T":             i18n.Viewer(i18n.ResolveViewer(h.uiLang, lang)),
 	})

@@ -635,3 +635,17 @@ table.data.compact td, table.data.compact th { padding: 5px 8px; }
     table.data a { color: var(--ink); text-decoration: none; }
     * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
+
+/* ---------- Visibility ---------- */
+.visibility-tag { display: inline-block; font-size: 12px; font-weight: 700; color: var(--ink); border: 1.5px dashed var(--pencil); border-radius: 4px; padding: 1px 6px; vertical-align: middle; }
+fieldset.visibility { border: 0; padding: 0; }
+fieldset.visibility legend { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+.form-group label.radio { display: flex; margin-bottom: 0; font-weight: 400; }
+.radio { display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border: 1.5px solid var(--edge); border-radius: var(--radius); cursor: pointer; background: #fdfcfa; }
+.radio + .radio { margin-top: 8px; }
+.radio input { margin-top: 4px; accent-color: var(--ink); }
+.radio strong { display: block; font-size: 15px; }
+.radio small { display: block; font-size: 13px; font-weight: 400; color: var(--pencil); line-height: 1.5; }
+.radio:has(input:checked) { border-color: var(--ink); background: var(--paper); }
+.rotate-key { margin-top: 20px; padding-top: 18px; border-top: 1px dashed var(--edge); }
+.rotate-key p { font-size: 14px; color: var(--pencil); margin-bottom: 10px; }

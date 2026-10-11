@@ -319,20 +319,20 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Link-only flipbooks need their access key (?k=) in every shared link.
+    function linkQuery(withPage) {
+        var params = [];
+        if (data.accessKey) params.push('k=' + encodeURIComponent(data.accessKey));
+        if (withPage && currentPage > 0) params.push('page=' + (currentPage + 1));
+        return params.length ? '?' + params.join('&') : '';
+    }
+
     function getShareURL(withPage) {
-        var base = (data.baseURL || '') + '/v/' + encodeURIComponent(data.slug || '');
-        if (withPage && currentPage > 0) {
-            return base + '?page=' + (currentPage + 1);
-        }
-        return base;
+        return (data.baseURL || '') + '/v/' + encodeURIComponent(data.slug || '') + linkQuery(withPage);
     }
 
     function getEmbedURL(withPage) {
-        var base = (data.baseURL || '') + '/embed/' + encodeURIComponent(data.slug || '');
-        if (withPage && currentPage > 0) {
-            return base + '?page=' + (currentPage + 1);
-        }
-        return base;
+        return (data.baseURL || '') + '/embed/' + encodeURIComponent(data.slug || '') + linkQuery(withPage);
     }
 
     function getEmbedCode(withPage) {

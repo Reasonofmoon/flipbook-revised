@@ -292,6 +292,7 @@ func runServer() {
 		r.Get("/admin/flipbooks/{id}", adminH.Detail)
 		r.Post("/admin/flipbooks/{id}/delete", adminH.Delete)
 		r.Post("/admin/flipbooks/{id}/settings", adminH.Settings)
+		r.Post("/admin/flipbooks/{id}/rotate-key", adminH.RotateKey)
 		r.Get("/admin/stats", statsH.Dashboard)
 		r.Get("/admin/stats/client", statsH.ClientReport)
 	})
