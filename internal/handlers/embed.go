@@ -54,7 +54,9 @@ func (h *EmbedHandler) Embed(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	go h.db.RecordView(fb.ID, r.Referer(), r.UserAgent())
+	if countableView(r) {
+		go h.db.RecordView(fb.ID, r.Referer(), r.UserAgent())
+	}
 
 	pageFmt := h.storage.DetectPageFormat(fb.ID)
 	var pages []string

@@ -6,13 +6,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Flipbook - {{.T.dashboard}}</title>
     <link rel="icon" type="image/svg+xml" href="/static/img/favicon.svg">
-    <link rel="stylesheet" href="/static/css/style.css?v=4">
+    <link rel="stylesheet" href="/static/css/style.css?v=5">
 </head>
 <body>
     <nav class="navbar">
         <a href="/admin" class="logo">READMASTER<span>플립북</span></a>
         <div class="nav-links">
             <a href="/admin" class="active">{{.T.dashboard}}</a>
+            <a href="/admin/stats">{{.T.stats}}</a>
             <a href="/admin/upload" class="btn btn-primary btn-sm">{{.T.upload_btn}}</a>
             <form method="POST" action="/logout" style="margin:0;display:inline;">
                 <button type="submit" class="btn btn-sm" style="border:none;color:var(--text-muted);cursor:pointer;">{{.T.logout}}</button>
@@ -45,6 +46,7 @@
                     <div class="card-meta">
                         <span class="badge badge-{{.Status}}">{{index $.T (printf "status_%s" .Status)}}</span>
                         {{if .PageCount}}<span>{{.PageCount}}{{$.T.pages_unit}}</span>{{end}}
+                        {{if .Client}}<span class="client-tag">{{.Client}}</span>{{end}}
                     </div>
                 </div>
             </a>

@@ -11,6 +11,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"strings"
 	"unicode"
 
@@ -40,6 +41,24 @@ func NewAdminHandler(db *database.DB, store *storage.Storage, w *worker.Worker, 
 // lang returns the admin UI language for this request.
 func (h *AdminHandler) lang(r *http.Request) string {
 	return i18n.ResolveAdmin(h.uiLang, r.Header.Get("Accept-Language"))
+}
+
+// clientNames lists the distinct academy names already used, for autocomplete.
+func (h *AdminHandler) clientNames() []string {
+	flipbooks, err := h.db.ListFlipbooks()
+	if err != nil {
+		return nil
+	}
+	seen := map[string]bool{}
+	var names []string
+	for _, fb := range flipbooks {
+		if fb.Client != "" && !seen[fb.Client] {
+			seen[fb.Client] = true
+			names = append(names, fb.Client)
+		}
+	}
+	sort.Strings(names)
+	return names
 }
 
 // t returns the admin UI text for this request.
@@ -72,8 +91,9 @@ func (h *AdminHandler) Index(w http.ResponseWriter, r *http.Request) {
 
 func (h *AdminHandler) UploadForm(w http.ResponseWriter, r *http.Request) {
 	h.tmpl.ExecuteTemplate(w, "admin_upload", map[string]interface{}{
-		"Lang": h.lang(r),
-		"T":    h.t(r),
+		"Lang":    h.lang(r),
+		"T":       h.t(r),
+		"Clients": h.clientNames(),
 	})
 }
 
@@ -120,6 +140,7 @@ func (h *AdminHandler) Upload(w http.ResponseWriter, r *http.Request) {
 		Filename: header.Filename,
 		FileSize: header.Size,
 		Status:   models.StatusPending,
+		Client:   strings.TrimSpace(r.FormValue("client")),
 	}
 	if err := h.db.CreateFlipbook(fb); err != nil {
 		log.Printf("Failed to create flipbook record: %v", err)
@@ -182,6 +203,7 @@ func (h *AdminHandler) Detail(w http.ResponseWriter, r *http.Request) {
 	h.tmpl.ExecuteTemplate(w, "admin_detail", map[string]interface{}{
 		"Lang":      h.lang(r),
 		"T":         h.t(r),
+		"Clients":   h.clientNames(),
 		"Flipbook":  fb,
 		"Thumbs":    thumbs,
 		"Views":     views,
@@ -210,7 +232,7 @@ func (h *AdminHandler) Settings(w http.ResponseWriter, r *http.Request) {
 	title := r.FormValue("title")
 	desc := r.FormValue("description")
 	if title != "" {
-		h.db.UpdateFlipbook(id, title, desc)
+		h.db.UpdateFlipbook(id, title, desc, strings.TrimSpace(r.FormValue("client")))
 	}
 	http.Redirect(w, r, "/admin/flipbooks/"+id, http.StatusSeeOther)
 }
@@ -274,6 +296,7 @@ func (h *AdminHandler) ImportURL(w http.ResponseWriter, r *http.Request) {
 		Slug:     slug,
 		Filename: "import.pdf",
 		Status:   models.StatusPending,
+		Client:   strings.TrimSpace(r.FormValue("client")),
 	}
 	if err := h.db.CreateFlipbook(fb); err != nil {
 		log.Printf("Failed to create flipbook record: %v", err)

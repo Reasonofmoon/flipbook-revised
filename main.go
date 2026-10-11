@@ -244,6 +244,7 @@ func runServer() {
 
 	// Setup handlers
 	adminH := handlers.NewAdminHandler(db, store, w, tmpl, cfg.BaseURL, cfg.UILang)
+	statsH := handlers.NewStatsHandler(db, tmpl, cfg.BaseURL, cfg.DataDir, cfg.UILang)
 	viewerH := handlers.NewViewerHandler(db, store, tmpl, cfg.BaseURL, cfg.UILang)
 	embedH := handlers.NewEmbedHandler(db, store, tmpl, cfg.BaseURL, cfg.UILang)
 	apiH := handlers.NewAPIHandler(db, store, w, cfg.BaseURL)
@@ -291,6 +292,8 @@ func runServer() {
 		r.Get("/admin/flipbooks/{id}", adminH.Detail)
 		r.Post("/admin/flipbooks/{id}/delete", adminH.Delete)
 		r.Post("/admin/flipbooks/{id}/settings", adminH.Settings)
+		r.Get("/admin/stats", statsH.Dashboard)
+		r.Get("/admin/stats/client", statsH.ClientReport)
 	})
 
 	// API routes (protected by API key when set)

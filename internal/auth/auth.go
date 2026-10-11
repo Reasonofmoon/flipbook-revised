@@ -14,8 +14,12 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// SessionCookieName is the admin session cookie; viewers use it to skip
+// counting the admin's own previews.
+const SessionCookieName = "flipbook_session"
+
 const (
-	sessionCookie  = "flipbook_session"
+	sessionCookie  = SessionCookieName
 	sessionTTL     = 7 * 24 * time.Hour // 1 week
 	bcryptCost     = 12
 	settingPwdHash = "admin_password_hash"

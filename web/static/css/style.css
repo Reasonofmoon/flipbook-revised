@@ -542,3 +542,96 @@ h2 {
     .card, .btn, .dropzone, .progress-fill { transition: none; }
     .badge-converting, .badge-regenerating { animation: none; }
 }
+
+/* ---------- Operations & academy reports ---------- */
+.client-tag { font-size: 13px; color: var(--pencil); border-left: 1px solid var(--edge); padding-left: 10px; }
+
+.stats-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.stats-head h1 { margin-bottom: 0; }
+.period-range { color: var(--pencil); font-size: 14px; margin: 6px 0 22px; }
+.period-switch { display: inline-flex; gap: 4px; background: rgba(255, 255, 255, .6); border: 1px solid var(--edge); border-radius: 8px; padding: 3px; }
+.period-switch a { padding: 6px 12px; border-radius: 6px; font-size: 14px; font-weight: 600; color: var(--pencil); text-decoration: none; }
+.period-switch a:hover { color: var(--ink); }
+.period-switch a[aria-current="page"] { background: var(--paper); color: var(--ink); box-shadow: 0 1px 2px rgba(28, 43, 75, .15); }
+
+.stat-tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
+.stat-tiles > div { background: var(--paper); border: 1px solid var(--edge); border-radius: 3px; box-shadow: var(--sheet-shadow); padding: 16px 18px; }
+.stat-tiles dt { font-size: 14px; color: var(--pencil); font-weight: 600; }
+.stat-tiles dd { font-size: 30px; font-weight: 800; letter-spacing: -.02em; line-height: 1.3; margin-top: 2px; }
+.stat-tiles dd.small { font-size: 14px; font-weight: 600; line-height: 1.7; letter-spacing: 0; }
+
+/* Daily views: one series, ink bars on ruled paper, 2px gaps, rounded data-ends */
+.bars {
+    display: flex; align-items: flex-end; gap: 2px; height: 180px; padding-top: 8px;
+    border-bottom: 1px solid var(--pencil);
+    background-image: repeating-linear-gradient(to top, transparent 0 44px, var(--rule) 44px 45px);
+}
+.bar { position: relative; flex: 1; height: 100%; display: flex; align-items: flex-end; outline: none; }
+.bar i { display: block; width: 100%; height: var(--h); min-height: 2px; background: var(--ink); border-radius: 4px 4px 0 0; }
+.bar:hover i, .bar:focus-visible i { background: var(--ink-hover); box-shadow: 0 0 0 2px var(--highlight); }
+.bar::after {
+    content: attr(data-tip); position: absolute; bottom: calc(var(--h) + 8px); left: 50%; transform: translateX(-50%);
+    white-space: nowrap; font-size: 12px; font-weight: 700; color: #fff; background: var(--ink);
+    padding: 4px 8px; border-radius: 4px; pointer-events: none; opacity: 0; transition: opacity .1s ease; z-index: 3;
+}
+.bar:hover::after, .bar:focus-visible::after { opacity: 1; }
+.bars-axis { display: flex; justify-content: space-between; font-size: 12px; color: var(--pencil); margin-top: 6px; }
+.as-table { margin-top: 14px; font-size: 14px; }
+.as-table summary { cursor: pointer; color: var(--pencil); font-weight: 600; }
+.as-table table { margin-top: 10px; max-width: 320px; }
+
+table.data { width: 100%; border-collapse: collapse; font-size: 15px; }
+table.data th { text-align: left; font-size: 13px; color: var(--pencil); font-weight: 700; padding: 8px 10px; border-bottom: 1.5px solid var(--ink); }
+table.data td { padding: 10px; border-bottom: 1px solid var(--rule); }
+table.data .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+table.data a { text-decoration-color: var(--rule); text-underline-offset: 3px; }
+table.data.compact td, table.data.compact th { padding: 5px 8px; }
+.hint { margin-top: 12px; font-size: 13px; color: var(--pencil); }
+
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.stats-grid .section { margin-bottom: 0; }
+.rank { list-style: none; counter-reset: rank; }
+.rank li { counter-increment: rank; display: flex; align-items: baseline; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--rule); font-size: 15px; }
+.rank li::before { content: counter(rank); flex: none; width: 22px; font-weight: 800; color: var(--pencil); }
+.rank li a { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-decoration: none; }
+.rank li a:hover { text-decoration: underline; }
+.rank li b { font-variant-numeric: tabular-nums; }
+
+.refs { list-style: none; }
+.refs li { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 7px 0; font-size: 14px; }
+.refs .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.refs .track { height: 10px; background: #f1efe9; border-radius: 0 4px 4px 0; overflow: hidden; }
+.refs .track i { display: block; height: 100%; background: var(--ink); border-radius: 0 4px 4px 0; }
+.refs b { font-variant-numeric: tabular-nums; min-width: 2.5em; text-align: right; }
+
+/* Report: one printable sheet for the academy */
+.report-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
+.report-toolbar .back-link { margin-bottom: 0; }
+.report-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.report { max-width: 860px; margin: 0 auto; padding: 44px 48px 36px; }
+.report-head { border-bottom: 2px solid rgba(214, 69, 61, .55); padding-bottom: 18px; margin-bottom: 26px; }
+.report-kicker { font-size: 13px; font-weight: 700; color: var(--pencil); }
+.report-head h1 { margin: 6px 0 4px; }
+.report-meta { font-size: 14px; color: var(--pencil); }
+.report-tiles { grid-template-columns: repeat(3, 1fr); }
+.report-tiles > div { box-shadow: none; background: #fbfaf7; }
+.report-block { margin-top: 30px; }
+.report-foot { margin-top: 34px; padding-top: 14px; border-top: 1px solid var(--rule); font-size: 13px; color: var(--pencil); }
+
+@media (max-width: 860px) {
+    .stat-tiles { grid-template-columns: repeat(2, 1fr); }
+    .stats-grid { grid-template-columns: 1fr; }
+    .report { padding: 28px 20px; }
+}
+
+@media print {
+    @page { size: A4; margin: 14mm; }
+    body { background: #fff; }
+    .no-print, .as-table, .bar::after { display: none !important; }
+    .container { padding: 0; max-width: none; }
+    .report { box-shadow: none; border: 0; padding: 0; max-width: none; }
+    .report-tiles > div { border-color: #ccc; }
+    .bars { break-inside: avoid; }
+    table.data a { color: var(--ink); text-decoration: none; }
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}

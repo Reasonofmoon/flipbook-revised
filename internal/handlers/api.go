@@ -139,6 +139,7 @@ func (h *APIHandler) UploadFlipbook(w http.ResponseWriter, r *http.Request) {
 		Filename: header.Filename,
 		FileSize: header.Size,
 		Status:   models.StatusPending,
+		Client:   strings.TrimSpace(r.FormValue("client")),
 	}
 	if err := h.db.CreateFlipbook(fb); err != nil {
 		log.Printf("Failed to create flipbook: %v", err)
@@ -245,6 +246,7 @@ func (h *APIHandler) ImportURL(w http.ResponseWriter, r *http.Request) {
 		Slug:     slug,
 		Filename: "import.pdf",
 		Status:   models.StatusPending,
+		Client:   strings.TrimSpace(r.FormValue("client")),
 	}
 	if err := h.db.CreateFlipbook(fb); err != nil {
 		log.Printf("Failed to create flipbook: %v", err)

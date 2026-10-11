@@ -6,13 +6,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{.T.upload}} - Flipbook</title>
     <link rel="icon" type="image/svg+xml" href="/static/img/favicon.svg">
-    <link rel="stylesheet" href="/static/css/style.css?v=4">
+    <link rel="stylesheet" href="/static/css/style.css?v=5">
 </head>
 <body>
     <nav class="navbar">
         <a href="/admin" class="logo">READMASTER<span>플립북</span></a>
         <div class="nav-links">
             <a href="/admin">{{.T.dashboard}}</a>
+            <a href="/admin/stats">{{.T.stats}}</a>
             <a href="/admin/upload" class="active">{{.T.upload}}</a>
             <form method="POST" action="/logout" style="margin:0;display:inline;">
                 <button type="submit" class="btn btn-sm" style="border:none;color:var(--text-muted);cursor:pointer;">{{.T.logout}}</button>
@@ -20,6 +21,7 @@
         </div>
     </nav>
     <main class="container">
+        <datalist id="client-list">{{range .Clients}}<option value="{{.}}">{{end}}</datalist>
         <!-- Upload Form (shown initially) -->
         <div id="upload-section">
             <h1>{{.T.create_flipbook}}</h1>
@@ -35,6 +37,10 @@
                     <div class="form-group">
                         <label for="title">{{.T.title_optional}}</label>
                         <input type="text" id="title" name="title" placeholder="{{.T.title_placeholder_file}}">
+                    </div>
+                    <div class="form-group">
+                        <label for="client">{{.T.client_label}}</label>
+                        <input type="text" id="client" name="client" list="client-list" autocomplete="off" placeholder="{{.T.client_placeholder}}">
                     </div>
                     <div class="form-group">
                         <div class="dropzone" id="dropzone">
@@ -60,6 +66,10 @@
                     <div class="form-group">
                         <label for="import-title">{{.T.title_optional}}</label>
                         <input type="text" id="import-title" name="title" placeholder="{{.T.title_placeholder_url}}">
+                    </div>
+                    <div class="form-group">
+                        <label for="import-client">{{.T.client_label}}</label>
+                        <input type="text" id="import-client" name="client" list="client-list" autocomplete="off" placeholder="{{.T.client_placeholder}}">
                     </div>
                     <div class="form-group">
                         <label for="import-url">{{.T.slides_url}}</label>

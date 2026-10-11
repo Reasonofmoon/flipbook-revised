@@ -1,0 +1,80 @@
+{{define "admin_report"}}
+<!DOCTYPE html>
+<html lang="{{if .Lang}}{{.Lang}}{{else}}en{{end}}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{if .Client}}{{.Client}}{{else}}{{.T.client_unassigned}}{{end}} {{.T.report_title}} - Flipbook</title>
+    <link rel="icon" type="image/svg+xml" href="/static/img/favicon.svg">
+    <link rel="stylesheet" href="/static/css/style.css?v=5">
+</head>
+<body class="report-page">
+    <nav class="navbar no-print">
+        <a href="/admin" class="logo">READMASTER<span>플립북</span></a>
+        <div class="nav-links">
+            <a href="/admin">{{.T.dashboard}}</a>
+            <a href="/admin/stats" class="active">{{.T.stats}}</a>
+            <a href="/admin/upload" class="btn btn-primary btn-sm">{{.T.upload_btn}}</a>
+            <form method="POST" action="/logout" style="margin:0;display:inline;">
+                <button type="submit" class="btn btn-sm" style="border:none;cursor:pointer;">{{.T.logout}}</button>
+            </form>
+        </div>
+    </nav>
+    <main class="container">
+        <div class="report-toolbar no-print">
+            <a href="/admin/stats?period={{.Period.Key}}" class="back-link">{{.T.back_to_stats}}</a>
+            <div class="report-actions">
+                {{template "period_switch" .}}
+                <button type="button" class="btn btn-primary btn-sm" id="print-report">{{.T.print_report}}</button>
+            </div>
+        </div>
+
+        <article class="report sheet">
+            <header class="report-head">
+                <p class="report-kicker">READMASTER 플립북 · {{.T.report_title}}</p>
+                <h1>{{if .Client}}{{.Client}}{{else}}{{.T.client_unassigned}}{{end}}</h1>
+                <p class="report-meta">{{.T.report_period}} {{.PeriodTxt}} &nbsp;|&nbsp; {{.T.report_issued}} {{.Issued}}</p>
+            </header>
+
+            <dl class="stat-tiles report-tiles">
+                <div><dt>{{.T.views_in_period}}</dt><dd>{{.Summary.Total}}</dd></div>
+                <div><dt>{{.T.books_in_report}}</dt><dd>{{len .Rows}}</dd></div>
+                <div><dt>{{.T.mobile_share}}</dt><dd>{{.Summary.MobilePercent}}%</dd></div>
+            </dl>
+
+            <section class="report-block">
+                <h2>{{.T.daily_views}}</h2>
+                {{template "daily_chart" .}}
+            </section>
+
+            <section class="report-block">
+                <h2>{{.T.views_by_book}}</h2>
+                <table class="data">
+                    <thead><tr><th>{{.T.title}}</th><th class="num">{{.T.pages}}</th><th class="num">{{.T.views_col}}</th></tr></thead>
+                    <tbody>
+                    {{range .Rows}}
+                    <tr>
+                        <td><a href="{{$.BaseURL}}/v/{{.FB.Slug}}" target="_blank" rel="noopener">{{.FB.Title}}</a></td>
+                        <td class="num">{{.FB.PageCount}}</td>
+                        <td class="num">{{.Views}}</td>
+                    </tr>
+                    {{end}}
+                    </tbody>
+                </table>
+            </section>
+
+            <section class="report-block">
+                <h2>{{.T.referrers}}</h2>
+                {{template "ref_list" .}}
+                <p class="hint">{{.T.referrer_hint}}</p>
+            </section>
+
+            <footer class="report-foot">{{.T.report_note}}</footer>
+        </article>
+    </main>
+    <script>
+        document.getElementById('print-report').addEventListener('click', function () { window.print(); });
+    </script>
+</body>
+</html>
+{{end}}

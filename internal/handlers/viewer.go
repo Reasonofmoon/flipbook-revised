@@ -10,9 +10,11 @@ import (
 	"unicode/utf8"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/jonradoff/flipbook/internal/auth"
 	"github.com/jonradoff/flipbook/internal/database"
 	"github.com/jonradoff/flipbook/internal/i18n"
 	"github.com/jonradoff/flipbook/internal/models"
+	"github.com/jonradoff/flipbook/internal/stats"
 	"github.com/jonradoff/flipbook/internal/storage"
 )
 
@@ -55,7 +57,9 @@ func (h *ViewerHandler) View(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	go h.db.RecordView(fb.ID, r.Referer(), r.UserAgent())
+	if countableView(r) {
+		go h.db.RecordView(fb.ID, r.Referer(), r.UserAgent())
+	}
 
 	pageFmt := h.storage.DetectPageFormat(fb.ID)
 	var pages []string
@@ -128,4 +132,17 @@ func buildDescription(title string, pageTexts []string) string {
 		return fmt.Sprintf("%s — interactive flipbook with full-page presentation slides.", title)
 	}
 	return strings.Join(parts, " ")
+}
+
+// countableView reports whether a viewer request should count toward the
+// academy reports: not a crawler or link-preview fetch, and not the admin
+// previewing while logged in.
+func countableView(r *http.Request) bool {
+	if stats.IsBot(r.UserAgent()) {
+		return false
+	}
+	if _, err := r.Cookie(auth.SessionCookieName); err == nil {
+		return false
+	}
+	return true
 }

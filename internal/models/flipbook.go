@@ -15,6 +15,7 @@ type Flipbook struct {
 	Title        string
 	Slug         string
 	Description  string
+	Client       string // academy the flipbook was made for (agency model)
 	Filename     string
 	FileSize     int64
 	PageCount    int

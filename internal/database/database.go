@@ -19,6 +19,7 @@ type flipbookDoc struct {
 	Title        string     `bson:"title"`
 	Slug         string     `bson:"slug"`
 	Description  string     `bson:"description"`
+	Client       string     `bson:"client,omitempty"`
 	Filename     string     `bson:"filename"`
 	FileSize     int64      `bson:"file_size"`
 	PageCount    int        `bson:"page_count"`
@@ -47,6 +48,7 @@ func docToModel(d *flipbookDoc) *models.Flipbook {
 		Title:        d.Title,
 		Slug:         d.Slug,
 		Description:  d.Description,
+		Client:       d.Client,
 		Filename:     d.Filename,
 		FileSize:     d.FileSize,
 		PageCount:    d.PageCount,
@@ -117,8 +119,9 @@ func (d *DB) ensureIndexes(ctx context.Context) {
 		{Keys: bson.D{{Key: "status", Value: 1}}},
 		{Keys: bson.D{{Key: "created_at", Value: -1}}},
 	})
-	d.views.Indexes().CreateOne(ctx, mongo.IndexModel{
-		Keys: bson.D{{Key: "flipbook_id", Value: 1}},
+	d.views.Indexes().CreateMany(ctx, []mongo.IndexModel{
+		{Keys: bson.D{{Key: "flipbook_id", Value: 1}}},
+		{Keys: bson.D{{Key: "viewed_at", Value: 1}}}, // period queries for stats
 	})
 	// TTL index to auto-expire sessions
 	d.sessions.Indexes().CreateOne(ctx, mongo.IndexModel{
@@ -136,6 +139,7 @@ func (d *DB) CreateFlipbook(fb *models.Flipbook) error {
 		Title:       fb.Title,
 		Slug:        fb.Slug,
 		Description: fb.Description,
+		Client:      fb.Client,
 		Filename:    fb.Filename,
 		FileSize:    fb.FileSize,
 		Status:      fb.Status,
@@ -213,11 +217,12 @@ func (d *DB) UpdateConversionResult(id string, pageCount, width, height int) err
 	return err
 }
 
-func (d *DB) UpdateFlipbook(id, title, description string) error {
+func (d *DB) UpdateFlipbook(id, title, description, client string) error {
 	_, err := d.flipbooks.UpdateByID(context.Background(), id, bson.M{
 		"$set": bson.M{
 			"title":       title,
 			"description": description,
+			"client":      client,
 			"updated_at":  time.Now(),
 		},
 	})

@@ -99,3 +99,36 @@ func TestReleaseDeletedSlugsMigratesOldRecords(t *testing.T) {
 		t.Fatalf("EnsureUniqueSlug after migration = %q, want legacy-deck", got)
 	}
 }
+
+func TestListViewsFiltersByPeriodAndFlipbook(t *testing.T) {
+	d := openTestDB(t)
+	ctx := context.Background()
+	base := time.Date(2026, 10, 1, 0, 0, 0, 0, time.UTC)
+	for i, v := range []viewDoc{
+		{FlipbookID: "a", ViewedAt: base.Add(1 * time.Hour), Referrer: "https://blog.naver.com/x", UserAgent: "ua"},
+		{FlipbookID: "b", ViewedAt: base.Add(2 * time.Hour)},
+		{FlipbookID: "a", ViewedAt: base.Add(-1 * time.Hour)}, // before the window
+		{FlipbookID: "a", ViewedAt: base.Add(48 * time.Hour)}, // at the (exclusive) end
+	} {
+		if _, err := d.views.InsertOne(ctx, v); err != nil {
+			t.Fatalf("insert %d: %v", i, err)
+		}
+	}
+	from, to := base, base.Add(48*time.Hour)
+
+	all, err := d.ListViews(ctx, nil, from, to)
+	if err != nil || len(all) != 2 {
+		t.Fatalf("all flipbooks: %d views, err %v; want 2", len(all), err)
+	}
+	onlyA, _ := d.ListViews(ctx, []string{"a"}, from, to)
+	if len(onlyA) != 1 || onlyA[0].Referrer != "https://blog.naver.com/x" {
+		t.Fatalf("flipbook a: %+v", onlyA)
+	}
+	none, _ := d.ListViews(ctx, []string{}, from, to)
+	if len(none) != 0 {
+		t.Fatalf("empty id list should match nothing, got %d", len(none))
+	}
+	if n, err := d.StorageUsage(ctx); err != nil || n <= 0 {
+		t.Fatalf("StorageUsage = %d, %v", n, err)
+	}
+}

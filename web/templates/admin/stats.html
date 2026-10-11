@@ -1,0 +1,129 @@
+{{define "admin_stats"}}
+<!DOCTYPE html>
+<html lang="{{if .Lang}}{{.Lang}}{{else}}en{{end}}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.T.stats_title}} - Flipbook</title>
+    <link rel="icon" type="image/svg+xml" href="/static/img/favicon.svg">
+    <link rel="stylesheet" href="/static/css/style.css?v=5">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/admin" class="logo">READMASTER<span>플립북</span></a>
+        <div class="nav-links">
+            <a href="/admin">{{.T.dashboard}}</a>
+            <a href="/admin/stats" class="active">{{.T.stats}}</a>
+            <a href="/admin/upload" class="btn btn-primary btn-sm">{{.T.upload_btn}}</a>
+            <form method="POST" action="/logout" style="margin:0;display:inline;">
+                <button type="submit" class="btn btn-sm" style="border:none;cursor:pointer;">{{.T.logout}}</button>
+            </form>
+        </div>
+    </nav>
+    <main class="container">
+        <div class="stats-head">
+            <h1>{{.T.stats_title}}</h1>
+            {{template "period_switch" .}}
+        </div>
+        <p class="period-range">{{.PeriodTxt}}</p>
+
+        <dl class="stat-tiles">
+            <div><dt>{{.T.views_in_period}}</dt><dd>{{.Summary.Total}}</dd></div>
+            <div><dt>{{.T.books_live}}</dt><dd>{{.Books}}</dd></div>
+            <div><dt>{{.T.mobile_share}}</dt><dd>{{.Summary.MobilePercent}}%</dd></div>
+            <div><dt>{{.T.storage}}</dt><dd class="small">{{.T.storage_files}} {{.FileSize}}<br>{{.T.storage_db}} {{.DBSize}}</dd></div>
+        </dl>
+
+        <section class="section">
+            <h2>{{.T.daily_views}}</h2>
+            {{template "daily_chart" .}}
+        </section>
+
+        <section class="section">
+            <h2>{{.T.by_client}}</h2>
+            {{if .Clients}}
+            <table class="data">
+                <thead><tr><th>{{.T.client}}</th><th class="num">{{.T.flipbooks_col}}</th><th class="num">{{.T.views_col}}</th><th></th></tr></thead>
+                <tbody>
+                {{range .Clients}}
+                <tr>
+                    <td>{{if .Name}}{{.Name}}{{else}}<span class="text-muted">{{$.T.client_unassigned}}</span>{{end}}</td>
+                    <td class="num">{{.Flipbooks}}</td>
+                    <td class="num">{{.Views}}</td>
+                    <td class="num"><a class="btn btn-sm" href="/admin/stats/client?name={{.Key}}&period={{$.Period.Key}}">{{$.T.open_report}}</a></td>
+                </tr>
+                {{end}}
+                </tbody>
+            </table>
+            <p class="hint">{{.T.client_hint}}</p>
+            {{else}}
+            <p class="text-muted">{{.T.no_flipbooks}}</p>
+            {{end}}
+        </section>
+
+        <div class="stats-grid">
+            <section class="section">
+                <h2>{{.T.top_flipbooks}}</h2>
+                {{if .Top}}
+                <ol class="rank">
+                {{range .Top}}
+                    <li><a href="/admin/flipbooks/{{.FB.ID}}">{{.FB.Title}}</a>{{if .FB.Client}}<span class="text-muted"> · {{.FB.Client}}</span>{{end}}<b>{{.Views}}</b></li>
+                {{end}}
+                </ol>
+                {{else}}
+                <p class="text-muted">{{.T.no_views}}</p>
+                {{end}}
+            </section>
+            <section class="section">
+                <h2>{{.T.referrers}}</h2>
+                {{template "ref_list" .}}
+            </section>
+        </div>
+        <p class="hint">{{.T.stats_note}}</p>
+    </main>
+</body>
+</html>
+{{end}}
+
+{{define "period_switch"}}
+<nav class="period-switch" aria-label="{{.T.period}}">
+    {{range .Periods}}
+    <a href="?{{if $.Key}}name={{$.Key}}&{{end}}period={{.}}"{{if eq . $.Period.Key}} aria-current="page"{{end}}>{{index $.T (printf "period_%s" .)}}</a>
+    {{end}}
+</nav>
+{{end}}
+
+{{define "daily_chart"}}
+<div class="bars" role="img" aria-label="{{.T.daily_views}}: {{.PeriodTxt}}, {{.T.views_in_period}} {{.Summary.Total}}">
+    {{range .Bars}}
+    <div class="bar" style="--h: {{.Pct}}%" data-tip="{{.Date.Format "01.02"}} · {{.Count}}" tabindex="0" aria-label="{{.Date.Format "01.02"}} {{.Count}}"><i></i></div>
+    {{end}}
+</div>
+<div class="bars-axis" aria-hidden="true">
+    {{with index .Bars 0}}<span>{{.Date.Format "01.02"}}</span>{{end}}
+    <span>{{(index .Bars (len .Bars | add -1)).Date.Format "01.02"}}</span>
+</div>
+<details class="as-table">
+    <summary>{{.T.show_table}}</summary>
+    <table class="data compact">
+        <thead><tr><th>{{.T.date}}</th><th class="num">{{.T.views_col}}</th></tr></thead>
+        <tbody>{{range .Bars}}<tr><td>{{.Date.Format "2006.01.02"}}</td><td class="num">{{.Count}}</td></tr>{{end}}</tbody>
+    </table>
+</details>
+{{end}}
+
+{{define "ref_list"}}
+{{if .Refs}}
+<ul class="refs">
+    {{range .Refs}}
+    <li>
+        <span class="name">{{if .Name}}{{.Name}}{{else}}{{$.T.ref_direct}}{{end}}</span>
+        <span class="track"><i style="width: {{.Pct}}%"></i></span>
+        <b>{{.Count}}</b>
+    </li>
+    {{end}}
+</ul>
+{{else}}
+<p class="text-muted">{{.T.no_views}}</p>
+{{end}}
+{{end}}
