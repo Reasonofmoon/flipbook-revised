@@ -273,12 +273,16 @@ func runServer() {
 	})
 
 	// Auth routes (public)
-	r.Get("/login", a.LoginPage)
-	r.Post("/login", a.LoginSubmit)
-	r.Post("/logout", a.LogoutHandler)
+	r.Group(func(r chi.Router) {
+		r.Use(adminCSP)
+		r.Get("/login", a.LoginPage)
+		r.Post("/login", a.LoginSubmit)
+		r.Post("/logout", a.LogoutHandler)
+	})
 
 	// Admin routes (protected)
 	r.Group(func(r chi.Router) {
+		r.Use(adminCSP)
 		r.Use(a.RequireAuth)
 		r.Get("/admin", adminH.Index)
 		r.Get("/admin/upload", adminH.UploadForm)
@@ -353,6 +357,20 @@ func runServer() {
 }
 
 // securityHeaders adds standard security headers to all responses.
+// adminCSP locks the login and admin pages to same-origin resources, so no
+// third-party script, stylesheet or font can load where the admin password
+// and session are used. Inline script/style stay allowed for the templates.
+func adminCSP(next http.Handler) http.Handler {
+	const policy = "default-src 'self'; script-src 'self' 'unsafe-inline'; " +
+		"style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; " +
+		"connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; " +
+		"frame-ancestors 'none'"
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Security-Policy", policy)
+		next.ServeHTTP(w, r)
+	})
+}
+
 func securityHeaders(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("X-Content-Type-Options", "nosniff")
