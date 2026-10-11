@@ -1,9 +1,11 @@
+@import url("/static/fonts/sametone/sametone.css"); /* Achmage SameTone, SIL OFL 1.1 */
+
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
     background: #1a1a2e;
     color: #fff;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: "Achmage SameTone Text", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
     overflow: hidden;
 }
 
@@ -202,6 +204,11 @@ body {
     padding: 28px;
     max-width: 520px;
     width: 90%;
+}
+
+.modal-content h3, #grid-header h3 {
+    font-family: "Achmage SameTone Display", "Achmage SameTone Text", serif;
+    font-weight: 700;
 }
 
 .modal-content h3 {
