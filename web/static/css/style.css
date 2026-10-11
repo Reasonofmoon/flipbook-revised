@@ -1,3 +1,5 @@
+@import url("/static/fonts/sametone/sametone.css");
+
 /* READMASTER flipbook — admin & login. Concept: teaching materials laid out on a desk.
    Tokens match the landing page; the analog layer is paper grain, ruled lines and tape. */
 
@@ -14,9 +16,9 @@
     --highlight: #ffe34d;
     --redpen: #d6453d;
     --tape: rgba(234, 220, 184, .82);
-    /* System fonts only: admin/login load nothing from third parties (see adminCSP) */
-    --serif: "Nanum Myeongjo", "AppleMyungjo", "Batang", "Noto Serif KR", serif;
-    --sans: "Pretendard Variable", Pretendard, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", system-ui, sans-serif;
+    /* Achmage SameTone, self-hosted (same origin, allowed by adminCSP) */
+    --serif: "Achmage SameTone Display", "Nanum Myeongjo", "AppleMyungjo", "Batang", serif;
+    --sans: "Achmage SameTone Text", "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", system-ui, sans-serif;
     --mono: ui-monospace, "SF Mono", Consolas, "D2Coding", monospace;
     --sheet-shadow: 0 1px 0 rgba(28, 43, 75, .06), 0 10px 22px -14px rgba(28, 43, 75, .45);
     --radius: 6px;
