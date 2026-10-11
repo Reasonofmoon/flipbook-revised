@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"html/template"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/jonradoff/flipbook/internal/database"
@@ -30,10 +31,19 @@ type Auth struct {
 	secret string
 	tmpl   *template.Template
 	uiLang string // "auto", "ko" or "en"
+	secure bool   // mark cookies Secure (public URL is https)
 }
 
-func New(db *database.DB, secret string, tmpl *template.Template, uiLang string) *Auth {
-	return &Auth{db: db, secret: secret, tmpl: tmpl, uiLang: uiLang}
+// New builds the admin auth. baseURL is the public URL; when it is https the
+// session cookie gets the Secure flag. The request itself can't tell us: on
+// Fly the proxy terminates TLS, so the app always sees plain http.
+func New(db *database.DB, secret string, tmpl *template.Template, uiLang, baseURL string) *Auth {
+	return &Auth{db: db, secret: secret, tmpl: tmpl, uiLang: uiLang, secure: SecureCookies(baseURL)}
+}
+
+// SecureCookies reports whether cookies for baseURL should be Secure.
+func SecureCookies(baseURL string) bool {
+	return strings.HasPrefix(strings.ToLower(strings.TrimSpace(baseURL)), "https://")
 }
 
 // loginData builds the login template data in the request's UI language.
@@ -89,7 +99,7 @@ func (a *Auth) Login(w http.ResponseWriter, password string) bool {
 		MaxAge:   int(sessionTTL.Seconds()),
 		HttpOnly: true,
 		SameSite: http.SameSiteLaxMode,
-		Secure:   false, // set true in production behind HTTPS
+		Secure:   a.secure,
 	})
 	return true
 }
@@ -106,6 +116,8 @@ func (a *Auth) Logout(w http.ResponseWriter, r *http.Request) {
 		Path:     "/",
 		MaxAge:   -1,
 		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+		Secure:   a.secure,
 	})
 }
 

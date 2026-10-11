@@ -235,7 +235,7 @@ func runServer() {
 	tmpl := parseTemplates()
 
 	// Initialize auth
-	a := auth.New(db, cfg.SessionSecret, tmpl, cfg.UILang)
+	a := auth.New(db, cfg.SessionSecret, tmpl, cfg.UILang, cfg.BaseURL)
 
 	// Warn if no password is set
 	if !a.HasPassword() {
