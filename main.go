@@ -257,7 +257,7 @@ func runServer() {
 	r.Use(securityHeaders)
 
 	// Static files
-	r.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(http.Dir("web/static"))))
+	r.Handle("/static/*", withStaticCache(http.StripPrefix("/static/", http.FileServer(http.Dir("web/static")))))
 
 	// Serve flipbook images with caching (path-traversal safe via filepath.Base)
 	r.Get("/data/flipbooks/{id}/pages/{filename}", func(rw http.ResponseWriter, req *http.Request) {
