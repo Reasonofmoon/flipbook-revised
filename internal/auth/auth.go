@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"html/template"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -32,13 +33,15 @@ type Auth struct {
 	tmpl   *template.Template
 	uiLang string // "auto", "ko" or "en"
 	secure bool   // mark cookies Secure (public URL is https)
+	limit  *loginLimiter
 }
 
 // New builds the admin auth. baseURL is the public URL; when it is https the
 // session cookie gets the Secure flag. The request itself can't tell us: on
 // Fly the proxy terminates TLS, so the app always sees plain http.
 func New(db *database.DB, secret string, tmpl *template.Template, uiLang, baseURL string) *Auth {
-	return &Auth{db: db, secret: secret, tmpl: tmpl, uiLang: uiLang, secure: SecureCookies(baseURL)}
+	return &Auth{db: db, secret: secret, tmpl: tmpl, uiLang: uiLang, secure: SecureCookies(baseURL),
+		limit: newLoginLimiter(loginMaxFailures, loginWindow)}
 }
 
 // SecureCookies reports whether cookies for baseURL should be Secure.
@@ -163,12 +166,24 @@ func (a *Auth) LoginPage(w http.ResponseWriter, r *http.Request) {
 
 // LoginSubmit processes the login form.
 func (a *Auth) LoginSubmit(w http.ResponseWriter, r *http.Request) {
+	ip := clientIP(r)
+	if blocked, wait := a.limit.Blocked(ip); blocked {
+		// Refuse without checking the password, so guesses during the
+		// lockout tell an attacker nothing.
+		w.Header().Set("Retry-After", strconv.Itoa(int(wait.Seconds())+1))
+		w.WriteHeader(http.StatusTooManyRequests)
+		a.tmpl.ExecuteTemplate(w, "login", a.loginData(r, "too_many_attempts"))
+		return
+	}
+
 	password := r.FormValue("password")
 
 	if a.Login(w, password) {
+		a.limit.Reset(ip)
 		http.Redirect(w, r, "/admin", http.StatusSeeOther)
 		return
 	}
+	a.limit.Fail(ip)
 
 	// Rate-limit brute force with a small delay
 	time.Sleep(500 * time.Millisecond)

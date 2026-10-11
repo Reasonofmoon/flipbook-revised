@@ -13,12 +13,13 @@ var adminText = map[string]Strings{
 		"logout":     "Logout",
 
 		// Login
-		"login_page_title": "Login",
-		"admin_login":      "Admin Login",
-		"login_subtitle":   "Enter your password to access the admin area.",
-		"password":         "Password",
-		"sign_in":          "Sign In",
-		"invalid_password": "Invalid password",
+		"login_page_title":  "Login",
+		"admin_login":       "Admin Login",
+		"login_subtitle":    "Enter your password to access the admin area.",
+		"password":          "Password",
+		"sign_in":           "Sign In",
+		"invalid_password":  "Invalid password",
+		"too_many_attempts": "Too many failed attempts. Try again in 15 minutes.",
 
 		// Dashboard
 		"your_flipbooks":      "Your Flipbooks",
@@ -164,12 +165,13 @@ var adminText = map[string]Strings{
 		"upload_btn": "+ 업로드",
 		"logout":     "로그아웃",
 
-		"login_page_title": "로그인",
-		"admin_login":      "관리자 로그인",
-		"login_subtitle":   "관리자 영역에 들어가려면 비밀번호를 입력하세요.",
-		"password":         "비밀번호",
-		"sign_in":          "로그인",
-		"invalid_password": "비밀번호가 올바르지 않습니다.",
+		"login_page_title":  "로그인",
+		"admin_login":       "관리자 로그인",
+		"login_subtitle":    "관리자 영역에 들어가려면 비밀번호를 입력하세요.",
+		"password":          "비밀번호",
+		"sign_in":           "로그인",
+		"invalid_password":  "비밀번호가 올바르지 않습니다.",
+		"too_many_attempts": "로그인 실패가 너무 많습니다. 15분 뒤에 다시 시도하세요.",
 
 		"your_flipbooks":      "내 플립북",
 		"books_unit":          "권",
