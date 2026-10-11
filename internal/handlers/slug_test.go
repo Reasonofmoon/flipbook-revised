@@ -41,3 +41,14 @@ func TestSlugifyTruncatesOnRuneBoundary(t *testing.T) {
 		t.Fatalf("slug %q ends with a dash", got)
 	}
 }
+
+// The database marks deleted slugs with "--deleted-"; that is only safe if
+// slugify can never produce a double hyphen itself.
+func TestSlugifyNeverProducesDoubleHyphen(t *testing.T) {
+	inputs := []string{"a -- b", "x - - y", "--lead", "trail--", "한글 -- 영어", "a!@#$%^&*()b", "1/n 정산 -- 앱"}
+	for _, in := range inputs {
+		if got := slugify(in); strings.Contains(got, "--") {
+			t.Errorf("slugify(%q) = %q contains --", in, got)
+		}
+	}
+}

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log"
 	"time"
 
 	"github.com/jonradoff/flipbook/internal/models"
@@ -102,6 +103,7 @@ func Open(ctx context.Context, uri, dbName string) (*DB, error) {
 	}
 
 	d.ensureIndexes(ctx)
+	d.releaseDeletedSlugs(ctx)
 	return d, nil
 }
 
@@ -222,15 +224,42 @@ func (d *DB) UpdateFlipbook(id, title, description string) error {
 	return err
 }
 
+// DeletedSlugMarker separates a deleted flipbook's original slug from its ID.
+// Generated slugs never contain "--", so a renamed slug cannot collide with a
+// live one.
+const DeletedSlugMarker = "--deleted-"
+
+// releasedSlug renames slug to "<slug>--deleted-<_id>" inside an update pipeline,
+// freeing the original slug (which has a unique index) for reuse.
+var releasedSlug = bson.D{{Key: "$concat", Value: bson.A{"$slug", DeletedSlugMarker, "$_id"}}}
+
+// DeleteFlipbook soft-deletes a flipbook and releases its slug so a new
+// flipbook can take it.
 func (d *DB) DeleteFlipbook(id string) error {
 	now := time.Now()
-	_, err := d.flipbooks.UpdateByID(context.Background(), id, bson.M{
-		"$set": bson.M{
-			"deleted_at": now,
-			"updated_at": now,
-		},
-	})
+	_, err := d.flipbooks.UpdateOne(context.Background(),
+		bson.M{"_id": id, "deleted_at": nil},
+		mongo.Pipeline{{{Key: "$set", Value: bson.D{
+			{Key: "deleted_at", Value: now},
+			{Key: "updated_at", Value: now},
+			{Key: "slug", Value: releasedSlug},
+		}}}})
 	return err
+}
+
+// releaseDeletedSlugs frees slugs still held by flipbooks deleted before
+// DeleteFlipbook started renaming them. Safe to run on every start.
+func (d *DB) releaseDeletedSlugs(ctx context.Context) {
+	res, err := d.flipbooks.UpdateMany(ctx,
+		bson.M{"deleted_at": bson.M{"$ne": nil}, "slug": bson.M{"$not": bson.Regex{Pattern: DeletedSlugMarker}}},
+		mongo.Pipeline{{{Key: "$set", Value: bson.D{{Key: "slug", Value: releasedSlug}}}}})
+	if err != nil {
+		log.Printf("Releasing slugs of deleted flipbooks failed: %v", err)
+		return
+	}
+	if res.ModifiedCount > 0 {
+		log.Printf("Released slugs of %d deleted flipbook(s)", res.ModifiedCount)
+	}
 }
 
 func (d *DB) GetFlipbooksByStatus(status string) ([]*models.Flipbook, error) {
