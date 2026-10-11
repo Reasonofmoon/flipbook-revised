@@ -30,14 +30,20 @@ COMMON_HANGUL = sorted({ord(bytes([hi, lo]).decode("euc-kr"))
                         for hi in range(0xB0, 0xC9) for lo in range(0xA1, 0xFF)})
 ALL_HANGUL = range(0xAC00, 0xD7A4)
 
+# Order matters: ko-rest is declared before ko-common. Both get the whole
+# Hangul block as their CSS unicode-range, and browsers check overlapping
+# faces last-declared first, so a syllable is looked up in the small common
+# file and only falls through to ko-rest when it is missing there. This keeps
+# the CSS tiny instead of listing thousands of scattered code points.
 RANGES = {
     "latin": list(range(0x20, 0x7F)) + list(range(0xA0, 0x180)) + list(range(0x2000, 0x2070))
     + [0x20A9, 0x20AC, 0x2122, 0x2190, 0x2191, 0x2192, 0x2193, 0x2212, 0x2713, 0x00B7],
-    "ko-common": COMMON_HANGUL,
-    "ko-rest": [c for c in ALL_HANGUL if c not in set(COMMON_HANGUL)],
     "ko-misc": list(range(0x1100, 0x1200)) + list(range(0x3000, 0x3040)) + list(range(0x3130, 0x3190))
     + list(range(0xFF00, 0xFFF0)) + list(range(0x2460, 0x2500)),  # jamo, CJK punct, fullwidth, circled
+    "ko-rest": [c for c in ALL_HANGUL if c not in set(COMMON_HANGUL)],
+    "ko-common": COMMON_HANGUL,
 }
+CSS_RANGE_OVERRIDE = {"ko-rest": "U+AC00-D7A3", "ko-common": "U+AC00-D7A3"}
 
 LICENSE_FILES = ("OFL.txt", "NOTICE.txt", "LICENSE", "FONTLOG.md")
 
@@ -100,7 +106,7 @@ def main(text_zip, display_zip, out_dir):
                     css.append(
                         f"@font-face {{ font-family: \"{FAMILY[style]}\"; font-style: normal; font-weight: {w}; "
                         f"font-display: swap; src: url(\"{fname}\") format(\"woff2\"); "
-                        f"unicode-range: {unicode_range(keep)}; }}")
+                        f"unicode-range: {CSS_RANGE_OVERRIDE.get(rname) or unicode_range(keep)}; }}")
                     print(f"{fname:40s} {size // 1024:5d} KB  ({len(keep)} chars)")
     (out / "sametone.css").write_text("\n".join(css) + "\n", encoding="utf-8")
     print(f"total {total // 1024} KB -> {out / 'sametone.css'}")
