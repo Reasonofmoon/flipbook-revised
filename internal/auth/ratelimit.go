@@ -13,9 +13,10 @@ const (
 	loginWindow      = 15 * time.Minute
 )
 
-// loginLimiter tracks failed logins per client IP in memory. The app runs on a
-// single machine, so process memory is enough; a restart simply resets it.
-type loginLimiter struct {
+// Limiter tracks failed attempts (logins, API keys) per client IP in memory.
+// The app runs on a single machine, so process memory is enough; a restart
+// simply resets it.
+type Limiter struct {
 	mu       sync.Mutex
 	failures map[string][]time.Time
 	max      int
@@ -23,12 +24,12 @@ type loginLimiter struct {
 	now      func() time.Time
 }
 
-func newLoginLimiter(max int, window time.Duration) *loginLimiter {
-	return &loginLimiter{failures: map[string][]time.Time{}, max: max, window: window, now: time.Now}
+func NewLimiter(max int, window time.Duration) *Limiter {
+	return &Limiter{failures: map[string][]time.Time{}, max: max, window: window, now: time.Now}
 }
 
 // recent drops failures older than the window. Caller holds mu.
-func (l *loginLimiter) recent(ip string) []time.Time {
+func (l *Limiter) recent(ip string) []time.Time {
 	cutoff := l.now().Add(-l.window)
 	kept := l.failures[ip][:0]
 	for _, t := range l.failures[ip] {
@@ -46,7 +47,7 @@ func (l *loginLimiter) recent(ip string) []time.Time {
 
 // Blocked reports whether ip has used up its attempts, and how long until the
 // oldest failure leaves the window.
-func (l *loginLimiter) Blocked(ip string) (bool, time.Duration) {
+func (l *Limiter) Blocked(ip string) (bool, time.Duration) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 	f := l.recent(ip)
@@ -56,7 +57,7 @@ func (l *loginLimiter) Blocked(ip string) (bool, time.Duration) {
 	return true, f[0].Add(l.window).Sub(l.now())
 }
 
-func (l *loginLimiter) Fail(ip string) {
+func (l *Limiter) Fail(ip string) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 	l.failures[ip] = append(l.recent(ip), l.now())
@@ -68,7 +69,7 @@ func (l *loginLimiter) Fail(ip string) {
 	}
 }
 
-func (l *loginLimiter) Reset(ip string) {
+func (l *Limiter) Reset(ip string) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 	delete(l.failures, ip)
@@ -77,10 +78,10 @@ func (l *loginLimiter) Reset(ip string) {
 // onFly is true when running on Fly.io, where the proxy sets Fly-Client-IP.
 var onFly = os.Getenv("FLY_APP_NAME") != ""
 
-// clientIP returns the caller's IP. Behind Fly's proxy RemoteAddr is the
+// ClientIP returns the caller's IP. Behind Fly's proxy RemoteAddr is the
 // proxy, so the Fly-Client-IP header is used there; elsewhere the header is
 // ignored because any client could send it.
-func clientIP(r *http.Request) string {
+func ClientIP(r *http.Request) string {
 	if onFly {
 		if ip := r.Header.Get("Fly-Client-IP"); ip != "" {
 			return ip

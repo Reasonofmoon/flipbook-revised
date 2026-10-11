@@ -10,7 +10,7 @@ import (
 
 func TestLoginLimiter(t *testing.T) {
 	now := time.Date(2026, 10, 11, 9, 0, 0, 0, time.UTC)
-	l := newLoginLimiter(3, 10*time.Minute)
+	l := NewLimiter(3, 10*time.Minute)
 	l.now = func() time.Time { return now }
 
 	for i := 0; i < 3; i++ {
@@ -46,19 +46,19 @@ func TestClientIP(t *testing.T) {
 	r.Header.Set("Fly-Client-IP", "203.0.113.9")
 
 	onFly = false
-	if got := clientIP(r); got != "10.0.0.5" {
+	if got := ClientIP(r); got != "10.0.0.5" {
 		t.Fatalf("off Fly: %q, want RemoteAddr host (header must be ignored)", got)
 	}
 	onFly = true
 	defer func() { onFly = false }()
-	if got := clientIP(r); got != "203.0.113.9" {
+	if got := ClientIP(r); got != "203.0.113.9" {
 		t.Fatalf("on Fly: %q, want Fly-Client-IP", got)
 	}
 }
 
 func TestLoginSubmitBlocked(t *testing.T) {
 	tmpl := template.Must(template.New("login").Parse(`{{define "login"}}{{.Error}}{{end}}`))
-	a := &Auth{tmpl: tmpl, uiLang: "en", limit: newLoginLimiter(1, time.Minute)}
+	a := &Auth{tmpl: tmpl, uiLang: "en", limit: NewLimiter(1, time.Minute)}
 	a.limit.Fail("10.0.0.5")
 
 	r := httptest.NewRequest("POST", "/login", strings.NewReader("password=x"))

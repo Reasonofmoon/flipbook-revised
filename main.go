@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"crypto/subtle"
 	"fmt"
 	"html/template"
 	"log"
@@ -9,6 +10,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"strconv"
 	"syscall"
 	"time"
 
@@ -299,7 +301,7 @@ func runServer() {
 
 	// API routes (protected by API key when set)
 	r.Group(func(r chi.Router) {
-		r.Use(apiAuth(cfg.APIKey))
+		r.Use(apiAuth(cfg.APIKey, auth.NewLimiter(apiMaxFailures, apiWindow)))
 		r.Get("/api/flipbooks", apiH.ListFlipbooks)
 		r.Post("/api/flipbooks", apiH.UploadFlipbook)
 		r.Post("/api/flipbooks/import", apiH.ImportURL)
@@ -385,15 +387,33 @@ func securityHeaders(next http.Handler) http.Handler {
 	})
 }
 
-// apiAuth middleware protects API routes with a bearer token.
-func apiAuth(apiKey string) func(http.Handler) http.Handler {
+// API key lockout: scripts and the MCP server use the API, so allow a few more
+// mistakes than the login form before locking an IP out.
+const (
+	apiMaxFailures = 10
+	apiWindow      = 15 * time.Minute
+)
+
+// apiAuth middleware protects API routes with a bearer token. An IP that sends
+// too many wrong keys is refused with 429 until its failures age out.
+func apiAuth(apiKey string, limit *auth.Limiter) func(http.Handler) http.Handler {
+	want := []byte("Bearer " + apiKey)
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			token := r.Header.Get("Authorization")
-			if token == "Bearer "+apiKey {
+			ip := auth.ClientIP(r)
+			if blocked, wait := limit.Blocked(ip); blocked {
+				w.Header().Set("Content-Type", "application/json")
+				w.Header().Set("Retry-After", strconv.Itoa(int(wait.Seconds())+1))
+				w.WriteHeader(http.StatusTooManyRequests)
+				w.Write([]byte(`{"error":"too many failed attempts"}`))
+				return
+			}
+			if subtle.ConstantTimeCompare([]byte(r.Header.Get("Authorization")), want) == 1 {
+				limit.Reset(ip)
 				next.ServeHTTP(w, r)
 				return
 			}
+			limit.Fail(ip)
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusUnauthorized)
 			w.Write([]byte(`{"error":"unauthorized"}`))

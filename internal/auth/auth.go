@@ -33,7 +33,7 @@ type Auth struct {
 	tmpl   *template.Template
 	uiLang string // "auto", "ko" or "en"
 	secure bool   // mark cookies Secure (public URL is https)
-	limit  *loginLimiter
+	limit  *Limiter
 }
 
 // New builds the admin auth. baseURL is the public URL; when it is https the
@@ -41,7 +41,7 @@ type Auth struct {
 // Fly the proxy terminates TLS, so the app always sees plain http.
 func New(db *database.DB, secret string, tmpl *template.Template, uiLang, baseURL string) *Auth {
 	return &Auth{db: db, secret: secret, tmpl: tmpl, uiLang: uiLang, secure: SecureCookies(baseURL),
-		limit: newLoginLimiter(loginMaxFailures, loginWindow)}
+		limit: NewLimiter(loginMaxFailures, loginWindow)}
 }
 
 // SecureCookies reports whether cookies for baseURL should be Secure.
@@ -166,7 +166,7 @@ func (a *Auth) LoginPage(w http.ResponseWriter, r *http.Request) {
 
 // LoginSubmit processes the login form.
 func (a *Auth) LoginSubmit(w http.ResponseWriter, r *http.Request) {
-	ip := clientIP(r)
+	ip := ClientIP(r)
 	if blocked, wait := a.limit.Blocked(ip); blocked {
 		// Refuse without checking the password, so guesses during the
 		// lockout tell an attacker nothing.
