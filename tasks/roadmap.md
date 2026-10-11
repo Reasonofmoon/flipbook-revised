@@ -18,6 +18,8 @@
 
 - [x] 퍼널 메인 페이지(/): READMASTER 플립북, 실제 제품 녹화 GIF 6개, 카카오톡 상담 CTA — tasks/landing-page.md
 
+- [x] 삭제된 플립북의 slug 해제(재업로드 시 -2 안 붙음) + 기존 삭제 기록 자동 정리, Mongo 통합 테스트·CI — 26b1984, 운영 배포 2026-10-11
+
 ## 결정 필요 (사용자)
 - [x] 퍼널 페이지 운영 배포 + 샘플 교재(unit-3-the-honeybee-dance), FLIPBOOK_DEMO_SLUG 설정 — 2026-10-11
 - [ ] 카카오톡 채널 주소(FLIPBOOK_KAKAO_URL) 정해서 fly.toml에 넣고 재배포
