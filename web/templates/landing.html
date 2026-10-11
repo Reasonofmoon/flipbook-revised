@@ -138,6 +138,21 @@
         .step-list button[aria-pressed="true"] .num { background: var(--highlight); border-color: var(--highlight); }
         .step-list button[aria-pressed="true"] strong { background: linear-gradient(transparent 60%, var(--highlight) 60%); display: inline; }
 
+        /* Pricing */
+        .plans { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; margin-top: 36px; }
+        .plan { display: flex; flex-direction: column; border: 1px solid var(--rule); border-radius: 14px; padding: 26px 24px 24px; background: var(--paper); }
+        .plan.featured { border: 2px solid var(--ink); }
+        .plan h3 { font-size: 18px; letter-spacing: -.01em; }
+        .plan .for { margin-top: 4px; font-size: 14px; color: var(--pencil); min-height: 2.9em; }
+        .plan .price { margin-top: 18px; font-size: 32px; font-weight: 800; letter-spacing: -.02em; line-height: 1.2; }
+        .plan .price small { font-size: 15px; font-weight: 600; color: var(--pencil); margin-left: 4px; }
+        .plan ul { list-style: none; margin: 18px 0 22px; padding-top: 16px; border-top: 1px solid var(--rule); font-size: 15px; line-height: 1.6; }
+        .plan li { position: relative; padding-left: 20px; }
+        .plan li + li { margin-top: 8px; }
+        .plan li::before { content: ""; position: absolute; left: 2px; top: .55em; width: 9px; height: 5px; border-left: 2px solid var(--ink); border-bottom: 2px solid var(--ink); transform: rotate(-45deg); }
+        .plan .btn { margin-top: auto; justify-content: center; }
+        .plans-note { margin-top: 16px; font-size: 14px; color: var(--pencil); }
+
         /* Q&A */
         .qa { margin-top: 36px; }
         .qa article { padding: 34px 0; border-top: 1px solid var(--rule); }
@@ -164,6 +179,8 @@
 
         @media (max-width: 860px) {
             .steps { grid-template-columns: 1fr; gap: 20px; }
+            .plans { grid-template-columns: 1fr; }
+            .plan .for { min-height: 0; }
             .stage { position: static; }
             .facts { grid-template-columns: repeat(2, 1fr); }
             .facts div:nth-child(3) { border-left: 0; }
@@ -272,6 +289,51 @@
         </div>
     </section>
 
+    <section class="section" aria-labelledby="pricing">
+        <div class="column">
+            <h2 id="pricing">가격</h2>
+            <p class="intro">파일을 보내 주시면 플립북으로 만들어 링크를 드립니다. 한 권만 맡기셔도 되고, 교재를 자주 올리신다면 월 구독이 편합니다.</p>
+        </div>
+        <div class="wide plans">
+            <article class="plan">
+                <h3>한 권씩</h3>
+                <p class="for">필요할 때 한 권만 맡기고 싶을 때</p>
+                <p class="price">25,000원<small>/ 권</small></p>
+                <ul>
+                    <li>30쪽 이하 교재 1권 변환</li>
+                    <li>공유 링크와 블로그 임베드 코드</li>
+                    <li>링크 1년 유지</li>
+                </ul>
+                {{template "plan_cta" .}}
+            </article>
+            <article class="plan featured">
+                <h3>베이직</h3>
+                <p class="for">매달 몇 권씩 꾸준히 올리는 학원</p>
+                <p class="price">20,000원<small>/ 월</small></p>
+                <ul>
+                    <li>매달 교재 5권까지</li>
+                    <li><span class="mark">월간 조회 리포트</span> (교재별 조회수, 유입 경로, 휴대폰 비율)</li>
+                    <li>구독 중 링크 계속 유지</li>
+                </ul>
+                {{template "plan_cta" .}}
+            </article>
+            <article class="plan">
+                <h3>스탠다드</h3>
+                <p class="for">교재를 자주 바꾸고 블로그에 꾸준히 올리는 학원</p>
+                <p class="price">45,000원<small>/ 월</small></p>
+                <ul>
+                    <li>매달 교재 20권까지</li>
+                    <li>월간 조회 리포트</li>
+                    <li>블로그·홈페이지 임베드 설정 도움</li>
+                </ul>
+                {{template "plan_cta" .}}
+            </article>
+        </div>
+        <div class="column">
+            <p class="plans-note">교재가 더 많거나 30쪽이 넘는 교재는 카카오톡으로 문의해 주세요.</p>
+        </div>
+    </section>
+
     <section class="section" aria-labelledby="faq">
         <div class="column">
             <h2 id="faq">원장님들이 먼저 물어보시는 것</h2>
@@ -308,7 +370,7 @@
                 <article>
                     <h3>비용은 얼마인가요?</h3>
                     <div class="answer">
-                        <p>교재 수와 학원 규모에 따라 달라서 상담에서 안내해 드립니다. 카카오톡으로 편하게 물어보세요.</p>
+                        <p>한 권씩 맡기시면 권당 25,000원, 매달 올리신다면 월 20,000원부터입니다. 위의 가격표를 참고해 주세요. 교재가 많으면 카카오톡으로 문의해 주세요.</p>
                     </div>
                 </article>
             </div>
@@ -367,6 +429,10 @@
     </script>
 </body>
 </html>
+{{end}}
+
+{{define "plan_cta"}}
+{{if .KakaoURL}}<a class="btn btn-quiet" href="{{.KakaoURL}}" target="_blank" rel="noopener">카카오톡으로 문의하기</a>{{else}}<span class="btn btn-quiet is-disabled" aria-disabled="true">카카오톡 채널 준비 중</span>{{end}}
 {{end}}
 
 {{define "kakao_btn"}}
