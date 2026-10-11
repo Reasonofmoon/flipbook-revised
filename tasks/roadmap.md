@@ -16,7 +16,10 @@
 
 - [x] 뷰어 UI 한국어화 (문서 언어에 따라 ko/en) — 7089303, 공유 링크 인코딩 — 0df719f
 
+- [x] 퍼널 메인 페이지(/): READMASTER 플립북, 실제 제품 녹화 GIF 6개, 카카오톡 상담 CTA — tasks/landing-page.md
+
 ## 결정 필요 (사용자)
+- [ ] 카카오톡 채널 주소(FLIPBOOK_KAKAO_URL) 정하기, 운영 서버에 샘플 교재 올리고 FLIPBOOK_DEMO_SLUG 설정 후 재배포
 - [x] UI 언어 서버 기본값: FLIPBOOK_UI_LANG (auto/ko/en), html lang·SEO 제목은 내용 언어 유지 — 2f4a419
 - [x] 관리자·로그인 화면 한국어화 (auto면 브라우저 언어) — ba307b2
 - [x] 배포: https://flipbook-revised.fly.dev (Fly nrt 1대 + 볼륨 3GB, Atlas Cluster0 FREE Seoul, DB 사용자 flipbook) — 2026-10-10, 체크리스트 통과
