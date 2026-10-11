@@ -31,6 +31,6 @@ api_key: ""                 # Bearer token for API/MCP access; auto-generated if
 # ("auto": viewer follows each flipbook's content, admin follows the browser)
 ui_lang: "auto"
 
-# Landing page (/): KakaoTalk channel link for the CTA and a sample flipbook slug
+# Landing page (/): KakaoTalk channel or open-chat link for the CTA and a sample flipbook slug
 kakao_url: ""
 demo_slug: ""
