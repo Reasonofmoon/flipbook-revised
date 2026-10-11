@@ -36,6 +36,7 @@ var viewerText = map[string]Strings{
 		"page":               "Page",
 		"loading":            "Loading...",
 		"preparing":          "This flipbook is being prepared. The page will refresh automatically.",
+		"rotate_hint":        "Rotate for best viewing experience",
 	},
 	"ko": {
 		"prev_page":          "이전 페이지",
@@ -66,6 +67,7 @@ var viewerText = map[string]Strings{
 		"page":               "페이지",
 		"loading":            "준비 중...",
 		"preparing":          "플립북을 준비하고 있습니다. 완료되면 페이지가 자동으로 새로고침됩니다.",
+		"rotate_hint":        "가로로 돌리면 더 크게 볼 수 있어요",
 	},
 }
 
