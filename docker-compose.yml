@@ -29,6 +29,8 @@ services:
       FLIPBOOK_API_KEY: ${FLIPBOOK_API_KEY:?set FLIPBOOK_API_KEY in .env}
       FLIPBOOK_SESSION_SECRET: ${FLIPBOOK_SESSION_SECRET:?set FLIPBOOK_SESSION_SECRET in .env}
       FLIPBOOK_UI_LANG: ${FLIPBOOK_UI_LANG:-auto}
+      FLIPBOOK_KAKAO_URL: ${FLIPBOOK_KAKAO_URL:-}
+      FLIPBOOK_DEMO_SLUG: ${FLIPBOOK_DEMO_SLUG:-}
       # Not read by the app; used only to pipe into `./flipbook set-password`
       FLIPBOOK_ADMIN_PASSWORD: ${FLIPBOOK_ADMIN_PASSWORD:-}
     volumes:

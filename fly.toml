@@ -11,6 +11,9 @@ primary_region = "nrt" # Tokyo; check `fly platform regions` for closer options
   FLIPBOOK_DATA_DIR = "/data"
   FLIPBOOK_MONGO_DB = "flipbook"
   FLIPBOOK_UI_LANG = "ko"
+  # Landing page: set these once the channel and sample flipbook exist
+  # FLIPBOOK_KAKAO_URL = "https://pf.kakao.com/_xxxx/chat"
+  # FLIPBOOK_DEMO_SLUG = "unit-3-the-honeybee-dance"
   # Secrets (set with `fly secrets set`, never here):
   #   FLIPBOOK_MONGO_URI, FLIPBOOK_API_KEY, FLIPBOOK_SESSION_SECRET,
   #   FLIPBOOK_ADMIN_PASSWORD

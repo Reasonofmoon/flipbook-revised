@@ -32,6 +32,10 @@ type Config struct {
 	// follows the language detected from each flipbook's content.
 	UILang string `yaml:"ui_lang"`
 
+	// Landing page (/) settings
+	KakaoURL string `yaml:"kakao_url"` // KakaoTalk channel link for the consult CTA
+	DemoSlug string `yaml:"demo_slug"` // flipbook slug linked as the live sample
+
 	// APIKeyFile is the file holding the API key when none was configured
 	// (empty if the key came from config/env, or could not be persisted).
 	APIKeyFile string `yaml:"-"`
@@ -109,6 +113,12 @@ func Load() *Config {
 		cfg.UILang = v
 	}
 	cfg.UILang = normalizeUILang(cfg.UILang)
+	if v := os.Getenv("FLIPBOOK_KAKAO_URL"); v != "" {
+		cfg.KakaoURL = v
+	}
+	if v := os.Getenv("FLIPBOOK_DEMO_SLUG"); v != "" {
+		cfg.DemoSlug = v
+	}
 
 	if cfg.LibreOfficeBin == "" {
 		cfg.LibreOfficeBin = findLibreOffice()

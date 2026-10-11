@@ -72,6 +72,8 @@ cp .env.example .env
 | `FLIPBOOK_SESSION_SECRET` | Session signing key. Required |
 | `FLIPBOOK_ADMIN_PASSWORD` | Admin login password, 8+ characters, no spaces |
 | `FLIPBOOK_UI_LANG` | UI language for the viewer and admin pages: `auto` (default), `ko`, or `en`. With `auto`, the viewer follows each flipbook's content and the admin pages follow the browser language |
+| `FLIPBOOK_KAKAO_URL` | KakaoTalk channel link for the consult button on the landing page (`/`). Leave empty to show "channel coming soon" |
+| `FLIPBOOK_DEMO_SLUG` | Slug of a flipbook linked as the live sample on the landing page. Optional |
 
 Generate random values for the key and secret:
 
@@ -161,6 +163,8 @@ Key settings:
 | `session_secret` | `FLIPBOOK_SESSION_SECRET` | auto-generated | Session signing key |
 | `api_key` | `FLIPBOOK_API_KEY` | auto-generated | Bearer token for API/MCP auth |
 | `ui_lang` | `FLIPBOOK_UI_LANG` | `auto` | UI language for viewer and admin (`auto`, `ko`, `en`). `auto`: viewer follows content, admin follows the browser. `<html lang>` on viewer pages always follows the content |
+| `kakao_url` | `FLIPBOOK_KAKAO_URL` | — | KakaoTalk channel link for the landing page CTA (http/https only) |
+| `demo_slug` | `FLIPBOOK_DEMO_SLUG` | — | Flipbook slug linked as the landing page sample |
 
 ## Usage
 
